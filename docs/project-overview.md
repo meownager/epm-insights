@@ -63,20 +63,51 @@ epm-insights brings that information into one workflow so I can review each proj
 
 ## System Workflow
 
+The workflow shows how project information moves through the audit process.
+
 ```mermaid
 flowchart TD
-    A[Proposal Package] --> B[Expected Project Baseline]
-    C[Actual Project Data] --> D[Actual Project State]
+    A[Proposal Package] --> B[Expected Baseline]
+    C[Actual Project Data] --> D[Actual Performance State]
     E[Optional Portfolio Data] --> F[Comparison Context]
     B --> G[Data Validation and Normalization]
     D --> G
     F --> G
-    G --> H[Audit Engine]
-    H --> I[Metric Calculations]
-    I --> J[Threshold Review]
-    J --> K[Project Health Positioning]
+    G --> H[Metric Calculations]
+    H --> I[Audit Engine Review]
+    I --> J[Project Health Positioning]
+    J --> K[Intelligent Insights Review]
     K --> L[Project Health Report]
     K --> M[Project Audit Report]
+```
+
+## System Architecture
+
+The architecture shows the main system layers that support the workflow.
+
+```mermaid
+flowchart TB
+    A[Input Layer] --> B[Data Processing Layer]
+    B --> C[Data Analytics Layer]
+    C --> D[Audit Engine]
+    D --> E[Intelligent Insights Layer]
+    E --> F[Reporting Layer]
+    F --> G[Dashboard and Report Outputs]
+
+    A1[Proposal Package] --> A
+    A2[Actual Project Data] --> A
+    A3[Portfolio Comparison Data] --> A
+
+    C1[SQL Checks] --> C
+    C2[Python Calculations] --> C
+
+    D1[Threshold Rules] --> D
+    D2[Health Scoring] --> D
+    D3[Audit Findings] --> D
+
+    E1[Pattern Review] --> E
+    E2[Risk Classification] --> E
+    E3[Report Assistance] --> E
 ```
 
 ### Future Prospects
