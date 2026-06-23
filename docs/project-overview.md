@@ -1,18 +1,20 @@
-# epm-insights Project Overview
+# EPM Insights Project Overview
 
 ## Purpose
 
-epm-insights is an Engineering Program/Project Management tool for auditing project and program performance in engineering and industrial automation environments.
+EPM Insights is designed to help engineering project managers audit project performance using proposal expectations, actual project data, and standard project health metrics.
 
-I am building it to compare proposal expectations with actual performance, evaluate completed or paused work against defined audit metrics, and generate project health and post-mortem reports that are clear enough to use in real review conversations.
+The project focuses on turning project records into a clear performance view. It is meant to show what was planned, what actually happened, where the variance occurred, and what should be carried forward into future estimating and execution.
 
-The focus is structured evaluation supported by data analytics and an intelligent insights layer. epm-insights is designed to show what was planned, what changed, where performance moved away from the original expectation, and what that means for future estimating, execution, project control, and program-level visibility.
+## Target User
+
+The first version is designed for individual project review. Once the workflow is stable, it can be shared with other engineering project managers for broader review and feedback.
 
 ## Core Problem
 
-Engineering Program/Project Managers often need to understand whether work performed as expected. That review usually means checking estimates, hours, rates, resource usage, billing status, deadlines, change orders, and final outcomes across multiple files.
+Engineering project managers often need to understand whether a project performed as expected. That review usually requires checking estimates, hours, rates, resource usage, billing status, deadlines, change orders, and final outcomes across multiple files.
 
-epm-insights brings that information into one workflow so I can review each project or program with the same structure and the same performance logic.
+EPM Insights brings that information into one local workflow so each project can be reviewed with the same structure and the same performance logic.
 
 ## Core Inputs
 
@@ -55,27 +57,6 @@ epm-insights brings that information into one workflow so I can review each proj
    - Lessons learned
    - Findings and recommendations
 
-## System Layers
-
-1. Expert Evaluation Framework
-   - Defines what good project performance means
-   - Converts Engineering Program/Project Management judgment into repeatable checks
-
-2. Data Analytics Layer
-   - Uses SQL and Python to clean, join, and calculate project metrics
-   - Measures variance, thresholds, and health indicators
-
-3. Audit Engine
-   - Applies audit rules to expected and actual project data
-   - Produces project positioning and findings
-
-4. Reporting Layer
-   - Generates project health summaries, audit reports, and post-mortem outputs
-
-5. Intelligent Insights Layer
-   - Uses AI and ML where they improve review quality
-   - Supports anomaly detection, project similarity analysis, risk classification, and report drafting once the audit logic is stable
-
 ## System Workflow
 
 ```mermaid
@@ -86,13 +67,12 @@ flowchart TD
     B --> G[Data Validation and Normalization]
     D --> G
     F --> G
-    G --> H[Data Analytics Layer]
-    H --> I[Audit Engine]
-    I --> J[Threshold and Variance Review]
+    G --> H[Audit Engine]
+    H --> I[Metric Calculations]
+    I --> J[Threshold Review]
     J --> K[Project Health Positioning]
-    K --> L[Intelligent Insights Layer]
-    L --> M[Project Health Report]
-    L --> N[Project Audit Report]
+    K --> L[Project Health Report]
+    K --> M[Project Audit Report]
 ```
 
 ## Future Prospects
@@ -106,8 +86,4 @@ Future versions may include:
 - Resource workload analysis
 - Risk classification using machine learning
 - Anomaly detection for unusual hours, billing, or schedule patterns
-- Report drafting support after the audit logic is stable
-
-## Project Ownership
-
-Author and project owner: Syeda
+- Optional local-only report assistance
