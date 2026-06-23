@@ -1,6 +1,8 @@
-# epm-insights Project Overview
+# epm-insights 
 
-## Purpose
+## Project Overview
+
+### Purpose
 
 epm-insights is an AI-assisted project analysis and audit system for Engineering Program/Project Managers.
 
@@ -8,17 +10,17 @@ I am building it to compare proposal expectations with actual performance, evalu
 
 The focus is structured evaluation supported by data analytics and an intelligent insights layer. epm-insights is designed to show what was planned, what changed, where performance moved away from the original expectation, and what that means for future estimating, execution, project control, and program-level visibility.
 
-## Target User
+### Target User
 
 The first version is designed for individual project review. Once the workflow is stable, it can be shared with other engineering project managers for broader review and feedback.
 
-## Core Problem
+### Core Problem
 
 Engineering project managers often need to understand whether a project performed as expected. That review usually requires checking estimates, hours, rates, resource usage, billing status, deadlines, change orders, and final outcomes across multiple files.
 
 epm-insights brings that information into one workflow so I can review each project or program with the same structure and the same performance logic.
 
-## Core Inputs
+### Core Inputs
 
 1. Proposal package
    - Expected budget
@@ -43,7 +45,7 @@ epm-insights brings that information into one workflow so I can review each proj
    - Company performance trends
    - Growth and workload patterns
 
-## Core Outputs
+### Core Outputs
 
 1. Project health report
    - Current position
@@ -77,7 +79,7 @@ flowchart TD
     K --> M[Project Audit Report]
 ```
 
-## Future Prospects
+### Future Prospects
 
 Future versions may include:
 
@@ -92,4 +94,4 @@ Future versions may include:
 
 ## Project Ownership
 
-Author and project owner: Syeda
+Author and project owner: Syeda M. (smonowar@purdue.edu)
