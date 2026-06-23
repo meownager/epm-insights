@@ -1,0 +1,601 @@
+entry_date,employee_name,project_number,project_title,hours,task_note
+2026-01-01,Maria Costa,EP-26017,Plant SCADA Modernization,8.5,site commissioning
+2026-01-01,James Liu,EP-26001,PLC-5 to ControlLogix Migration,4.5,site commissioning
+2026-01-01,Aisha Mendez,EP-26002,SCADA System Upgrade,4,customer meeting
+2026-01-01,James Brown,EP-26009,MES Integration Phase 1,8.5,drawings
+2026-01-01,James Becker,EP-26007,Batch System Validation,6.5,FAT testing
+2026-01-02,Carlos Garcia,EP-26015,Furnace Temperature Control Retrofit,4,drawings
+2026-01-02,Carlos Orlov,EP-26007,Batch System Validation,2.5,troubleshooting
+2026-01-02,Maria Tanaka,EP-26013,Wastewater pH Control Upgrade,4,site commissioning
+2026-01-02,James Garcia,EP-26002,SCADA System Upgrade,2.5,FAT testing
+2026-01-02,Maria Costa,EP-26012,Panel Shop Build - 12 Enclosures,6,PLC programming
+2026-01-02,Aisha Mendez,EP-26007,Batch System Validation,8,FAT testing
+2026-01-02,Aisha Brown,EP-26001,PLC-5 to ControlLogix Migration,4,FAT testing
+2026-01-02,Maria Sharma,EP-26001,PLC-5 to ControlLogix Migration,2.5,documentation
+2026-01-02,Aisha Iyer,EP-26009,MES Integration Phase 1,6.5,startup support
+2026-01-03,Maria Petrov,EP-26008,Safety System Upgrade Press Shop,6,HMI dev
+2026-01-03,Aisha Tanaka,EP-26010,Compressor Room Controls,6,documentation
+2026-01-03,Carlos Smith,EP-26002,SCADA System Upgrade,6.5,startup support
+2026-01-03,Carlos Iyer,EP-26011,Annual Service Contract - Plant 3,4.5,startup support
+2026-01-04,Carlos Singh,EP-26019,Line 4 Conveyance Modernization,6,startup support
+2026-01-04,Carlos Lopez,EP-26007,Batch System Validation,2,customer meeting
+2026-01-04,Aisha Liu,ep-26011,Annual Service Contract - Plant 3,4.5,panel wiring
+2026-01-04,Aisha Costa,EP-26014,AGV Route Expansion,8.5,customer meeting
+2026-01-04,Aisha Smith,EP-26010,Compressor Room Controls,8.5,startup support
+2026-01-04,Maria Novak,EP-26014,AGV Route Expansion,8,panel wiring
+2026-01-05,Wei Kim,,PLC-5 to ControlLogix Migration,2.5,panel wiring
+2026-01-05,Wei Sharma,EP-26016,Legacy PLC Modernization - Assembly,8.5,PLC programming
+2026-01-05,Aisha Liu,EP-26017,Plant SCADA Modernization,4,panel wiring
+2026-01-05,Maria Mendez,EP-26004,Conveyor Retrofit Line 4,4.5,PLC programming
+2026-01-06,Wei Garcia,EP-26018,Weld Automation Cell - Body Shop,8.5,FAT testing
+2026-01-06,Wei Garcia,EP-26010,Compressor Room Controls,8.5,startup support
+2026-01-06,Wei Costa,EP-26007,Batch System Validation,2,HMI dev
+2026-01-06,Maria Ali,EP-26017,Plant SCADA Modernization,4.5,panel wiring
+2026-01-07,Aisha Orlov,EP-26010,Compressor Room Controls,4,drawings
+2026-01-07,James Lopez,EP-26006,Vision Inspection Station,8.5,PLC programming
+2026-01-07,James Orlov,EP-26020,Downtime Tracking System Rollout,8.5,HMI dev
+2026-01-07,Wei Brown,EP-26004,Conveyor Retrofit Line 4,4,FAT testing
+2026-01-07,Carlos Becker,EP-26004,Conveyor Retrofit Line 4,6.5,PLC programming
+2026-01-07,Maria Wright,EP-26008,Safety System Upgrade Press Shop,4.5,troubleshooting
+2026-01-07,James Singh,EP-26020,Downtime Tracking System Rollout,8.5,site commissioning
+2026-01-07,Aisha Ali,EP-26011,Annual Service Contract - Plant 3,4.5,drawings
+2026-01-07,Aisha Petrov,EP-26003,Robotic Weld Cell Install,2.5,drawings
+2026-01-08,James Ali,EP-26011,Annual Service Contract - Plant 3,6.5,customer meeting
+2026-01-09,Aisha Ali,EP-26014,AGV Route Expansion,2,PLC programming
+2026-01-10,Aisha Becker,EP-26020,Downtime Tracking System Rollout,6.5,startup support
+2026-01-10,Carlos Smith,EP-26005,Palletizer Controls Rebuild,8.5,FAT testing
+2026-01-10,James Petrov,EP-26013,Wastewater pH Control Upgrade,8.5,documentation
+2026-01-10,Maria Tanaka,EP-26020,Downtime Tracking System Rollout,2,PLC programming
+2026-01-11,Wei Mendez,EP-26006,Vision Inspection Station,8,HMI dev
+2026-01-12,Wei Khan,EP-26020,Downtime Tracking System Rollout,4,site commissioning
+2026-01-12,Aisha Smith,EP-26014,AGV Route Expansion,2,PLC programming
+2026-01-12,Carlos Smith,EP-26016,Legacy PLC Modernization - Assembly,8,HMI dev
+2026-01-13,Wei Liu,EP-26018,Weld Automation Cell - Body Shop,6,PLC programming
+2026-01-13,Wei Brown,EP-26010,Compressor Room Controls,2.5,customer meeting
+2026-01-13,Aisha Becker,EP-26006,Vision Inspection Station,4.5,drawings
+2026-01-13,Wei Costa,EP-26013,Wastewater pH Control Upgrade,4.5,troubleshooting
+2026-01-13,Maria Tanaka,EP-26005,Palletizer Controls Rebuild,2,panel wiring
+2026-01-14,Aisha Tanaka,EP26014,AGV Route Expansion,2.5,startup support
+2026-01-14,Carlos Iyer,EP-26012,Panel Shop Build - 12 Enclosures,8,FAT testing
+2026-01-15,James Becker,EP-26007,Batch System Validation,8,site commissioning
+2026-01-16,Wei Smith,EP-26007,Batch System Validation,2.5,PLC programming
+2026-01-16,Carlos Iyer,EP-26001,PLC-5 to ControlLogix Migration,4.5,startup support
+2026-01-17,Wei Lopez,EP-26017,Plant SCADA Modernization,6.5,troubleshooting
+2026-01-17,Maria Iyer,EP-26012,Panel Shop Build - 12 Enclosures,4.5,drawings
+2026-01-17,James Smith,EP-26003,Robotic Weld Cell Install,4.5,customer meeting
+2026-01-17,Aisha Kim,EP-26001,PLC-5 to ControlLogix Migration,2,documentation
+2026-01-18,James Novak,EP-26017,Plant SCADA Modernization,4,FAT testing
+2026-01-18,Carlos Singh,EP-26003,Robotic Weld Cell Install,4.5,drawings
+2026-01-18,Wei Iyer,EP-26002,SCADA System Upgrade,8.5,documentation
+2026-01-19,James Garcia,EP-26003,Robotic Weld Cell Install,2.5,PLC programming
+2026-01-19,Aisha Orlov,EP-26019,Line 4 Conveyance Modernization,2,drawings
+2026-01-20,Wei Khan,EP-26002,SCADA System Upgrade,6.5,drawings
+2026-01-20,Carlos Khan,EP-26011,Annual Service Contract - Plant 3,6,HMI dev
+2026-01-20,Carlos Petrov,,Downtime Tracking System Rollout,8.5,HMI dev
+2026-01-20,James Iyer,EP-26019,Line 4 Conveyance Modernization,8.5,PLC programming
+2026-01-21,James Lopez,EP-26006,Vision Inspection Station,8.5,HMI dev
+2026-01-21,Wei Becker,EP-26004,Conveyor Retrofit Line 4,8,FAT testing
+2026-01-21,Carlos Mendez,EP-26008,Safety System Upgrade Press Shop,2.5,documentation
+2026-01-21,Carlos Tanaka,EP-26018,Weld Automation Cell - Body Shop,2.5,customer meeting
+2026-01-21,Aisha Liu,EP-26011,Annual Service Contract - Plant 3,8.5,HMI dev
+2026-01-21,Carlos Kim,EP-26012,Panel Shop Build - 12 Enclosures,6,troubleshooting
+2026-01-21,Aisha Khan,EP-26013,Wastewater pH Control Upgrade,8.5,panel wiring
+2026-01-22,James Garcia,EP-26012,Panel Shop Build - 12 Enclosures,4,FAT testing
+2026-01-22,Aisha Sharma,EP-26017,Plant SCADA Modernization,2.5,customer meeting
+2026-01-22,Maria Brown,EP-26017,Plant SCADA Modernization,4.5,documentation
+2026-01-22,Aisha Wright,EP-26019,Line 4 Conveyance Modernization,4,site commissioning
+2026-01-23,Maria Novak,EP-26002,SCADA System Upgrade,8.5,documentation
+2026-01-23,James Iyer,EP-26005,Palletizer Controls Rebuild,2,startup support
+2026-01-23,Maria Liu,EP-26004,Conveyor Retrofit Line 4,2.5,PLC programming
+2026-01-23,Wei Tanaka,EP-26019,Line 4 Conveyance Modernization,2,FAT testing
+2026-01-23,James Singh,EP-26007,Batch System Validation,8,startup support
+2026-01-23,Maria Petrov,EP-26010,Compressor Room Controls,8,HMI dev
+2026-01-24,Maria Smith,EP-26015,Furnace Temperature Control Retrofit,4,panel wiring
+2026-01-24,Aisha Garcia,ep-26010,Compressor Room Controls,2.5,customer meeting
+2026-01-24,Aisha Mendez,EP-26006,Vision Inspection Station,6,FAT testing
+2026-01-24,Carlos Becker,,Downtime Tracking System Rollout,6.5,startup support
+2026-01-25,Wei Petrov,EP26017,Plant SCADA Modernization,8.5,PLC programming
+2026-01-25,Aisha Novak,EP-26008,Safety System Upgrade Press Shop,6,documentation
+2026-01-25,Wei Singh,EP-26011,Annual Service Contract - Plant 3,8.5,documentation
+2026-01-25,Carlos Hassan,EP-26001,PLC-5 to ControlLogix Migration,2,HMI dev
+2026-01-27,Carlos Tanaka,EP-26017,Plant SCADA Modernization,8,documentation
+2026-01-27,Wei Liu,EP-26013,Wastewater pH Control Upgrade,6,drawings
+2026-01-27,Maria Ali,EP-26011,Annual Service Contract - Plant 3,4,FAT testing
+2026-01-27,Aisha Liu,EP-26014,AGV Route Expansion,6,FAT testing
+2026-01-27,Carlos Novak,EP-26007,Batch System Validation,4.5,troubleshooting
+2026-01-28,Wei Orlov,EP-26005,Palletizer Controls Rebuild,4,HMI dev
+2026-01-28,James Kim,EP-26001,PLC-5 to ControlLogix Migration,4,HMI dev
+2026-01-28,Maria Lopez,EP-26017,Plant SCADA Modernization,4.5,PLC programming
+2026-01-28,Carlos Sharma,EP-26005,Palletizer Controls Rebuild,8.5,troubleshooting
+2026-02-01,James Garcia,EP-26005,Palletizer Controls Rebuild,2,customer meeting
+2026-02-01,Maria Tanaka,EP-26007,Batch System Validation,4.5,documentation
+2026-02-01,Wei Tanaka,EP-26017,Plant SCADA Modernization,6,panel wiring
+2026-02-01,Carlos Wright,EP-26005,Palletizer Controls Rebuild,6,startup support
+2026-02-01,Wei Costa,EP-26013,Wastewater pH Control Upgrade,4.5,PLC programming
+2026-02-01,Wei Brown,EP-26015,Furnace Temperature Control Retrofit,4,site commissioning
+2026-02-02,Aisha Kim,EP-26004,Conveyor Retrofit Line 4,2.5,PLC programming
+2026-02-02,Carlos Tanaka,EP-26010,Compressor Room Controls,6,panel wiring
+2026-02-02,Maria Smith,EP-26020,Downtime Tracking System Rollout,4.5,panel wiring
+2026-02-02,Wei Novak,ep-26020,Downtime Tracking System Rollout,2,startup support
+2026-02-02,Maria Becker,EP-26009,MES Integration Phase 1,6.5,troubleshooting
+2026-02-03,Maria Petrov,,MES Integration Phase 1,2.5,panel wiring
+2026-02-03,Aisha Wright,EP-26010,Compressor Room Controls,4.5,drawings
+2026-02-03,Aisha Wright,EP-26007,Batch System Validation,2,documentation
+2026-02-03,Aisha Lopez,EP-26009,MES Integration Phase 1,2,FAT testing
+2026-02-03,Aisha Ali,EP-26006,Vision Inspection Station,6,troubleshooting
+2026-02-03,Wei Garcia,EP-26012,Panel Shop Build - 12 Enclosures,8,documentation
+2026-02-03,Wei Orlov,EP-26014,AGV Route Expansion,8.5,HMI dev
+2026-02-03,Aisha Hassan,EP-26012,Panel Shop Build - 12 Enclosures,2.5,PLC programming
+2026-02-03,Carlos Wright,EP-26013,Wastewater pH Control Upgrade,2.5,site commissioning
+2026-02-04,Carlos Garcia,EP-26010,Compressor Room Controls,2.5,site commissioning
+2026-02-04,James Novak,EP-26004,Conveyor Retrofit Line 4,6,troubleshooting
+2026-02-04,Maria Novak,EP-26014,AGV Route Expansion,2.5,HMI dev
+2026-02-04,Maria Kim,EP26017,Plant SCADA Modernization,8.5,drawings
+2026-02-05,Maria Orlov,EP-26008,Safety System Upgrade Press Shop,4.5,PLC programming
+2026-02-05,James Khan,EP-26009,MES Integration Phase 1,6.5,drawings
+2026-02-05,Carlos Petrov,EP26014,AGV Route Expansion,4,drawings
+2026-02-06,Carlos Hassan,EP-26006,Vision Inspection Station,8.5,drawings
+2026-02-06,Carlos Costa,EP-26008,Safety System Upgrade Press Shop,6,customer meeting
+2026-02-06,Carlos Wright,EP-26020,Downtime Tracking System Rollout,4,drawings
+2026-02-07,Wei Becker,EP-26019,Line 4 Conveyance Modernization,8,HMI dev
+2026-02-07,James Kim,EP-26019,Line 4 Conveyance Modernization,4.5,drawings
+2026-02-08,Carlos Wright,EP-26009,MES Integration Phase 1,8.5,customer meeting
+2026-02-08,Aisha Tanaka,EP26002,SCADA System Upgrade,2.5,HMI dev
+2026-02-08,Carlos Petrov,EP-26018,Weld Automation Cell - Body Shop,4,panel wiring
+2026-02-08,Wei Wright,EP-26004,Conveyor Retrofit Line 4,8,PLC programming
+2026-02-09,James Becker,EP-26008,Safety System Upgrade Press Shop,4,FAT testing
+2026-02-09,Carlos Singh,EP-26007,Batch System Validation,6,startup support
+2026-02-09,Wei Wright,EP-26013,Wastewater pH Control Upgrade,8.5,panel wiring
+2026-02-09,Maria Mendez,EP-26010,Compressor Room Controls,6,drawings
+2026-02-10,Wei Singh,EP-26010,Compressor Room Controls,4.5,drawings
+2026-02-10,Wei Smith,EP-26004,Conveyor Retrofit Line 4,6.5,FAT testing
+2026-02-10,Carlos Wright,EP-26019,Line 4 Conveyance Modernization,8,customer meeting
+2026-02-10,James Novak,EP-26010,Compressor Room Controls,2,documentation
+2026-02-10,Wei Novak,EP-26001,PLC-5 to ControlLogix Migration,4,PLC programming
+2026-02-10,Carlos Kim,ep-26009,MES Integration Phase 1,6.5,FAT testing
+2026-02-10,Carlos Smith,EP-26015,Furnace Temperature Control Retrofit,6.5,documentation
+2026-02-11,Wei Becker,EP-26018,Weld Automation Cell - Body Shop,8,customer meeting
+2026-02-11,Wei Novak,EP-26009,MES Integration Phase 1,2,HMI dev
+2026-02-11,Aisha Kim,EP-26006,Vision Inspection Station,6.5,FAT testing
+2026-02-11,Maria Lopez,EP-26006,Vision Inspection Station,2,documentation
+2026-02-11,James Hassan,EP-26001,PLC-5 to ControlLogix Migration,4,panel wiring
+2026-02-12,Carlos Mendez,EP-26009,MES Integration Phase 1,4.5,site commissioning
+2026-02-12,Maria Petrov,,Weld Automation Cell - Body Shop,4,customer meeting
+2026-02-12,James Mendez,EP-26004,Conveyor Retrofit Line 4,2,panel wiring
+2026-02-12,Carlos Sharma,EP-26008,Safety System Upgrade Press Shop,8.5,FAT testing
+2026-02-12,Maria Costa,EP-26019,Line 4 Conveyance Modernization,4,FAT testing
+2026-02-12,Aisha Hassan,EP-26017,Plant SCADA Modernization,8.5,panel wiring
+2026-02-12,Aisha Liu,EP-26017,Plant SCADA Modernization,4.5,documentation
+2026-02-12,Maria Garcia,,Panel Shop Build - 12 Enclosures,2.5,panel wiring
+2026-02-12,Maria Garcia,EP-26013,Wastewater pH Control Upgrade,4.5,startup support
+2026-02-13,Wei Lopez,EP-26008,Safety System Upgrade Press Shop,2,panel wiring
+2026-02-13,James Hassan,EP-26011,Annual Service Contract - Plant 3,2,panel wiring
+2026-02-13,Aisha Wright,EP26013,Wastewater pH Control Upgrade,2.5,panel wiring
+2026-02-14,Carlos Garcia,EP-26007,Batch System Validation,6,customer meeting
+2026-02-14,James Brown,EP-26002,SCADA System Upgrade,6,PLC programming
+2026-02-14,Wei Lopez,EP-26015,Furnace Temperature Control Retrofit,8.5,PLC programming
+2026-02-14,James Smith,EP-26019,Line 4 Conveyance Modernization,4.5,panel wiring
+2026-02-14,James Petrov,EP-26009,MES Integration Phase 1,2.5,documentation
+2026-02-14,Maria Khan,EP-26007,Batch System Validation,2,drawings
+2026-02-14,James Garcia,ep-26001,PLC-5 to ControlLogix Migration,6.5,HMI dev
+2026-02-15,James Costa,EP-26019,Line 4 Conveyance Modernization,4.5,customer meeting
+2026-02-16,Wei Petrov,EP-26016,Legacy PLC Modernization - Assembly,2,customer meeting
+2026-02-16,Carlos Singh,EP-26014,AGV Route Expansion,4,documentation
+2026-02-16,Aisha Lopez,EP-26001,PLC-5 to ControlLogix Migration,8,panel wiring
+2026-02-16,Carlos Costa,,SCADA System Upgrade,4.5,PLC programming
+2026-02-17,Aisha Novak,EP-26013,Wastewater pH Control Upgrade,4,troubleshooting
+2026-02-17,James Hassan,EP-26010,Compressor Room Controls,8,documentation
+2026-02-17,Carlos Mendez,EP-26006,Vision Inspection Station,4,site commissioning
+2026-02-17,Carlos Singh,EP-26020,Downtime Tracking System Rollout,2,PLC programming
+2026-02-17,Carlos Mendez,EP-26001,PLC-5 to ControlLogix Migration,2.5,drawings
+2026-02-17,James Smith,EP-26005,Palletizer Controls Rebuild,4.5,documentation
+2026-02-18,Aisha Garcia,ep-26017,Plant SCADA Modernization,6,FAT testing
+2026-02-18,Maria Mendez,EP-26013,Wastewater pH Control Upgrade,4.5,startup support
+2026-02-18,Wei Mendez,EP-26009,MES Integration Phase 1,4,documentation
+2026-02-18,Carlos Orlov,EP-26007,Batch System Validation,6,startup support
+2026-02-19,Carlos Singh,EP-26009,MES Integration Phase 1,2.5,HMI dev
+2026-02-19,Maria Ali,EP-26007,Batch System Validation,4,PLC programming
+2026-02-19,Maria Brown,EP-26018,Weld Automation Cell - Body Shop,8.5,customer meeting
+2026-02-19,Aisha Smith,EP-26018,Weld Automation Cell - Body Shop,2,drawings
+2026-02-19,Aisha Ali,EP-26007,Batch System Validation,2,HMI dev
+2026-02-20,Carlos Smith,EP-26009,MES Integration Phase 1,6,drawings
+2026-02-20,Aisha Mendez,EP-26012,Panel Shop Build - 12 Enclosures,6,troubleshooting
+2026-02-20,Maria Orlov,EP-26002,SCADA System Upgrade,2,site commissioning
+2026-02-20,Maria Lopez,EP-26013,Wastewater pH Control Upgrade,6,site commissioning
+2026-02-21,Maria Orlov,EP-26015,Furnace Temperature Control Retrofit,8,documentation
+2026-02-21,Maria Iyer,EP-26020,Downtime Tracking System Rollout,8,troubleshooting
+2026-02-21,James Kim,EP-26009,MES Integration Phase 1,8,troubleshooting
+2026-02-21,Wei Lopez,EP-26017,Plant SCADA Modernization,6,HMI dev
+2026-02-21,Maria Wright,EP-26009,MES Integration Phase 1,4,site commissioning
+2026-02-21,Carlos Wright,EP-26001,PLC-5 to ControlLogix Migration,2,PLC programming
+2026-02-21,Aisha Smith,EP-26013,Wastewater pH Control Upgrade,6,panel wiring
+2026-02-22,James Garcia,EP-26006,Vision Inspection Station,8,panel wiring
+2026-02-22,Wei Sharma,EP-26002,SCADA System Upgrade,4.5,panel wiring
+2026-02-22,James Wright,EP-26020,Downtime Tracking System Rollout,2.5,site commissioning
+2026-02-22,James Brown,EP-26008,Safety System Upgrade Press Shop,6.5,drawings
+2026-02-22,Maria Liu,EP-26006,Vision Inspection Station,4.5,HMI dev
+2026-02-22,Wei Liu,EP-26005,Palletizer Controls Rebuild,2,troubleshooting
+2026-02-23,James Ali,EP-26001,PLC-5 to ControlLogix Migration,8,PLC programming
+2026-02-23,Aisha Liu,EP-26002,SCADA System Upgrade,4.5,HMI dev
+2026-02-23,Wei Singh,EP-26008,Safety System Upgrade Press Shop,4.5,HMI dev
+2026-02-23,Maria Costa,EP-26009,MES Integration Phase 1,8.5,HMI dev
+2026-02-23,Carlos Khan,EP-26013,Wastewater pH Control Upgrade,8.5,startup support
+2026-02-23,Carlos Costa,EP-26020,Downtime Tracking System Rollout,6.5,site commissioning
+2026-02-24,Aisha Iyer,EP-26020,Downtime Tracking System Rollout,2.5,FAT testing
+2026-02-24,Maria Iyer,EP-26006,Vision Inspection Station,4,FAT testing
+2026-02-24,James Kim,EP-26019,Line 4 Conveyance Modernization,6.5,startup support
+2026-02-24,Maria Garcia,EP-26001,PLC-5 to ControlLogix Migration,8.5,panel wiring
+2026-02-24,Carlos Sharma,ep-26020,Downtime Tracking System Rollout,4.5,customer meeting
+2026-02-24,Maria Khan,EP-26003,Robotic Weld Cell Install,8.5,customer meeting
+2026-02-24,Carlos Garcia,EP-26010,Compressor Room Controls,2.5,customer meeting
+2026-02-25,James Iyer,EP-26015,Furnace Temperature Control Retrofit,4.5,documentation
+2026-02-25,Maria Mendez,EP-26020,Downtime Tracking System Rollout,4.5,panel wiring
+2026-02-25,Carlos Garcia,EP-26009,MES Integration Phase 1,4.5,site commissioning
+2026-02-25,Carlos Petrov,EP-26020,Downtime Tracking System Rollout,2,panel wiring
+2026-02-26,Maria Hassan,EP-26020,Downtime Tracking System Rollout,8,site commissioning
+2026-02-26,Maria Ali,EP-26012,Panel Shop Build - 12 Enclosures,6.5,HMI dev
+2026-02-26,Wei Singh,EP-26020,Downtime Tracking System Rollout,6,drawings
+2026-02-26,Carlos Smith,EP-26002,SCADA System Upgrade,2,HMI dev
+2026-02-26,Aisha Costa,EP-26015,Furnace Temperature Control Retrofit,8.5,troubleshooting
+2026-02-26,James Kim,EP-26004,Conveyor Retrofit Line 4,2.5,site commissioning
+2026-02-27,James Garcia,EP26009,MES Integration Phase 1,6.5,drawings
+2026-02-27,James Singh,EP-26004,Conveyor Retrofit Line 4,8.5,documentation
+2026-02-27,Aisha Smith,EP26004,Conveyor Retrofit Line 4,2.5,startup support
+2026-02-27,James Liu,EP-26015,Furnace Temperature Control Retrofit,8.5,startup support
+2026-02-28,James Lopez,EP-26006,Vision Inspection Station,8,panel wiring
+2026-02-28,Aisha Liu,EP-26010,Compressor Room Controls,2.5,drawings
+2026-02-28,Maria Tanaka,EP-26018,Weld Automation Cell - Body Shop,2,documentation
+2026-02-28,Maria Iyer,EP-26003,Robotic Weld Cell Install,2.5,HMI dev
+2026-02-28,Wei Costa,EP-26001,PLC-5 to ControlLogix Migration,2,startup support
+2026-03-01,Aisha Kim,EP-26011,Annual Service Contract - Plant 3,4,startup support
+2026-03-01,Wei Wright,EP-26006,Vision Inspection Station,8,FAT testing
+2026-03-02,Carlos Kim,EP-26001,PLC-5 to ControlLogix Migration,6.5,startup support
+2026-03-02,Maria Smith,EP-26019,Line 4 Conveyance Modernization,6,drawings
+2026-03-02,Maria Liu,EP-26007,Batch System Validation,6.5,troubleshooting
+2026-03-02,Carlos Costa,EP-26016,Legacy PLC Modernization - Assembly,8,customer meeting
+2026-03-02,James Ali,EP-26014,AGV Route Expansion,6.5,documentation
+2026-03-02,Carlos Costa,EP-26008,Safety System Upgrade Press Shop,8.5,HMI dev
+2026-03-03,Carlos Tanaka,EP-26014,AGV Route Expansion,6,drawings
+2026-03-03,Wei Liu,EP-26005,Palletizer Controls Rebuild,2.5,site commissioning
+2026-03-03,Carlos Orlov,EP-26002,SCADA System Upgrade,2,panel wiring
+2026-03-04,Wei Iyer,EP-26002,SCADA System Upgrade,8,panel wiring
+2026-03-04,James Becker,EP-26009,MES Integration Phase 1,6,site commissioning
+2026-03-04,Wei Kim,EP-26004,Conveyor Retrofit Line 4,8,customer meeting
+2026-03-04,Carlos Lopez,EP26004,Conveyor Retrofit Line 4,4,FAT testing
+2026-03-04,James Petrov,EP-26016,Legacy PLC Modernization - Assembly,4,HMI dev
+2026-03-05,Carlos Novak,EP-26016,Legacy PLC Modernization - Assembly,4,FAT testing
+2026-03-05,Carlos Smith,,Legacy PLC Modernization - Assembly,4.5,PLC programming
+2026-03-06,Maria Hassan,EP-26011,Annual Service Contract - Plant 3,6,FAT testing
+2026-03-06,Wei Becker,EP-26007,Batch System Validation,6,FAT testing
+2026-03-06,James Ali,EP-26016,Legacy PLC Modernization - Assembly,6.5,HMI dev
+2026-03-06,Aisha Costa,EP-26013,Wastewater pH Control Upgrade,2,FAT testing
+2026-03-06,James Wright,EP-26016,Legacy PLC Modernization - Assembly,6,documentation
+2026-03-07,Wei Sharma,EP-26011,Annual Service Contract - Plant 3,4,drawings
+2026-03-07,Carlos Mendez,EP-26009,MES Integration Phase 1,6.5,panel wiring
+2026-03-07,Carlos Tanaka,EP-26008,Safety System Upgrade Press Shop,8.5,startup support
+2026-03-07,James Iyer,EP-26012,Panel Shop Build - 12 Enclosures,6,site commissioning
+2026-03-07,Wei Mendez,EP-26019,Line 4 Conveyance Modernization,2.5,panel wiring
+2026-03-07,James Smith,EP-26003,Robotic Weld Cell Install,8,troubleshooting
+2026-03-08,Maria Orlov,EP-26004,Conveyor Retrofit Line 4,2.5,troubleshooting
+2026-03-09,Aisha Brown,EP-26008,Safety System Upgrade Press Shop,8,panel wiring
+2026-03-09,Maria Mendez,ep-26020,Downtime Tracking System Rollout,2,panel wiring
+2026-03-09,Carlos Wright,EP-26009,MES Integration Phase 1,6,troubleshooting
+2026-03-09,Wei Wright,EP-26001,PLC-5 to ControlLogix Migration,4.5,site commissioning
+2026-03-09,Aisha Becker,EP-26011,Annual Service Contract - Plant 3,2,panel wiring
+2026-03-09,Aisha Smith,EP-26008,Safety System Upgrade Press Shop,6.5,startup support
+2026-03-10,James Petrov,EP26002,SCADA System Upgrade,6,customer meeting
+2026-03-10,Carlos Orlov,EP-26008,Safety System Upgrade Press Shop,4,site commissioning
+2026-03-10,Maria Kim,EP-26014,AGV Route Expansion,8.5,documentation
+2026-03-10,James Petrov,EP-26019,Line 4 Conveyance Modernization,2,drawings
+2026-03-10,Maria Ali,,Conveyor Retrofit Line 4,6,troubleshooting
+2026-03-11,Aisha Hassan,EP-26005,Palletizer Controls Rebuild,4,site commissioning
+2026-03-11,James Kim,EP-26015,Furnace Temperature Control Retrofit,6,troubleshooting
+2026-03-12,Aisha Tanaka,ep-26009,MES Integration Phase 1,4,documentation
+2026-03-12,Carlos Lopez,EP-26009,MES Integration Phase 1,6.5,PLC programming
+2026-03-12,James Iyer,EP-26011,Annual Service Contract - Plant 3,2.5,HMI dev
+2026-03-12,Wei Becker,EP-26006,Vision Inspection Station,4,site commissioning
+2026-03-13,Maria Petrov,EP-26005,Palletizer Controls Rebuild,2,documentation
+2026-03-13,James Costa,EP-26016,Legacy PLC Modernization - Assembly,6.5,customer meeting
+2026-03-13,James Tanaka,EP26018,Weld Automation Cell - Body Shop,2,site commissioning
+2026-03-13,Carlos Kim,EP-26019,Line 4 Conveyance Modernization,8,site commissioning
+2026-03-13,Maria Khan,EP-26003,Robotic Weld Cell Install,2.5,customer meeting
+2026-03-13,Maria Khan,EP-26010,Compressor Room Controls,6.5,site commissioning
+2026-03-13,Wei Wright,EP-26011,Annual Service Contract - Plant 3,6.5,customer meeting
+2026-03-13,James Ali,EP-26013,Wastewater pH Control Upgrade,6,documentation
+2026-03-13,Wei Becker,EP-26014,AGV Route Expansion,8.5,PLC programming
+2026-03-14,Maria Smith,EP-26003,Robotic Weld Cell Install,2,customer meeting
+2026-03-14,Wei Petrov,EP-26010,Compressor Room Controls,2.5,site commissioning
+2026-03-14,James Kim,EP-26002,SCADA System Upgrade,4.5,HMI dev
+2026-03-14,Wei Costa,EP-26013,Wastewater pH Control Upgrade,6.5,site commissioning
+2026-03-15,Maria Costa,EP26001,PLC-5 to ControlLogix Migration,6,troubleshooting
+2026-03-15,Wei Becker,EP-26008,Safety System Upgrade Press Shop,2,customer meeting
+2026-03-15,Carlos Mendez,EP-26003,Robotic Weld Cell Install,4,panel wiring
+2026-03-15,Carlos Lopez,EP-26003,Robotic Weld Cell Install,2.5,troubleshooting
+2026-03-15,James Garcia,ep-26012,Panel Shop Build - 12 Enclosures,2,PLC programming
+2026-03-15,Maria Wright,EP-26003,Robotic Weld Cell Install,6.5,FAT testing
+2026-03-15,Wei Kim,EP-26016,Legacy PLC Modernization - Assembly,2.5,drawings
+2026-03-15,Aisha Smith,ep-26007,Batch System Validation,4.5,documentation
+2026-03-16,Aisha Kim,EP-26013,Wastewater pH Control Upgrade,8,HMI dev
+2026-03-16,Carlos Lopez,EP-26019,Line 4 Conveyance Modernization,4.5,drawings
+2026-03-16,Maria Novak,EP-26014,AGV Route Expansion,4.5,FAT testing
+2026-03-17,Carlos Khan,,Wastewater pH Control Upgrade,4,documentation
+2026-03-17,Wei Khan,EP-26001,PLC-5 to ControlLogix Migration,8.5,site commissioning
+2026-03-17,James Singh,EP-26015,Furnace Temperature Control Retrofit,8,documentation
+2026-03-17,Aisha Singh,EP-26013,Wastewater pH Control Upgrade,4,customer meeting
+2026-03-18,Wei Brown,EP-26018,Weld Automation Cell - Body Shop,6.5,PLC programming
+2026-03-18,Maria Kim,EP-26004,Conveyor Retrofit Line 4,8,troubleshooting
+2026-03-18,Aisha Wright,EP-26005,Palletizer Controls Rebuild,8.5,documentation
+2026-03-18,Wei Garcia,EP-26020,Downtime Tracking System Rollout,2,site commissioning
+2026-03-18,Wei Liu,EP-26002,SCADA System Upgrade,8.5,PLC programming
+2026-03-18,Maria Novak,EP-26010,Compressor Room Controls,2.5,customer meeting
+2026-03-19,Maria Brown,EP-26015,Furnace Temperature Control Retrofit,4.5,troubleshooting
+2026-03-19,Maria Sharma,EP-26015,Furnace Temperature Control Retrofit,8,documentation
+2026-03-19,Wei Ali,EP-26012,Panel Shop Build - 12 Enclosures,8.5,drawings
+2026-03-20,Maria Kim,EP-26017,Plant SCADA Modernization,6,troubleshooting
+2026-03-20,Aisha Tanaka,EP-26005,Palletizer Controls Rebuild,4,troubleshooting
+2026-03-20,Carlos Orlov,ep-26008,Safety System Upgrade Press Shop,6,drawings
+2026-03-20,Carlos Costa,EP-26017,Plant SCADA Modernization,2.5,panel wiring
+2026-03-20,Carlos Ali,EP-26005,Palletizer Controls Rebuild,6,troubleshooting
+2026-03-20,James Garcia,EP-26012,Panel Shop Build - 12 Enclosures,4,PLC programming
+2026-03-21,Carlos Brown,EP-26015,Furnace Temperature Control Retrofit,2.5,site commissioning
+2026-03-21,James Costa,EP-26019,Line 4 Conveyance Modernization,8,HMI dev
+2026-03-21,Maria Kim,EP-26020,Downtime Tracking System Rollout,2,panel wiring
+2026-03-21,Carlos Singh,EP-26019,Line 4 Conveyance Modernization,4.5,documentation
+2026-03-22,Wei Garcia,EP-26013,Wastewater pH Control Upgrade,8,FAT testing
+2026-03-22,Carlos Lopez,EP-26009,MES Integration Phase 1,6.5,panel wiring
+2026-03-22,Aisha Orlov,EP-26003,Robotic Weld Cell Install,8.5,panel wiring
+2026-03-22,Maria Tanaka,EP-26012,Panel Shop Build - 12 Enclosures,2.5,startup support
+2026-03-23,Wei Petrov,EP-26008,Safety System Upgrade Press Shop,6.5,site commissioning
+2026-03-23,James Becker,EP-26002,SCADA System Upgrade,6.5,documentation
+2026-03-23,Maria Mendez,EP-26004,Conveyor Retrofit Line 4,4,panel wiring
+2026-03-23,James Sharma,EP-26012,Panel Shop Build - 12 Enclosures,8.5,documentation
+2026-03-23,Aisha Mendez,EP-26017,Plant SCADA Modernization,8,site commissioning
+2026-03-23,James Iyer,EP-26013,Wastewater pH Control Upgrade,6,site commissioning
+2026-03-24,Maria Petrov,EP-26005,Palletizer Controls Rebuild,8,documentation
+2026-03-24,James Wright,EP-26013,Wastewater pH Control Upgrade,2,drawings
+2026-03-24,Aisha Tanaka,EP-26003,Robotic Weld Cell Install,6,troubleshooting
+2026-03-25,James Sharma,EP-26003,Robotic Weld Cell Install,4,startup support
+2026-03-25,James Hassan,EP-26019,Line 4 Conveyance Modernization,8,HMI dev
+2026-03-25,Maria Lopez,EP-26020,Downtime Tracking System Rollout,2,PLC programming
+2026-03-26,James Costa,EP-26003,Robotic Weld Cell Install,4.5,HMI dev
+2026-03-26,James Tanaka,EP-26001,PLC-5 to ControlLogix Migration,8.5,HMI dev
+2026-03-26,Carlos Becker,EP-26007,Batch System Validation,4,site commissioning
+2026-03-27,Wei Hassan,EP26011,Annual Service Contract - Plant 3,2,panel wiring
+2026-03-27,Aisha Becker,EP-26013,Wastewater pH Control Upgrade,6.5,documentation
+2026-03-27,Maria Tanaka,EP-26012,Panel Shop Build - 12 Enclosures,4,panel wiring
+2026-03-27,Wei Wright,EP-26002,SCADA System Upgrade,2.5,HMI dev
+2026-03-28,Aisha Lopez,EP-26013,Wastewater pH Control Upgrade,6,troubleshooting
+2026-03-28,James Orlov,EP-26003,Robotic Weld Cell Install,6.5,documentation
+2026-04-01,Maria Petrov,EP-26006,Vision Inspection Station,6.5,documentation
+2026-04-01,Carlos Tanaka,EP-26014,AGV Route Expansion,6.5,site commissioning
+2026-04-01,Aisha Wright,EP-26009,MES Integration Phase 1,8,panel wiring
+2026-04-02,Wei Iyer,EP-26008,Safety System Upgrade Press Shop,2.5,PLC programming
+2026-04-02,Wei Tanaka,EP-26010,Compressor Room Controls,4.5,startup support
+2026-04-02,Carlos Ali,EP-26020,Downtime Tracking System Rollout,6.5,customer meeting
+2026-04-02,Maria Costa,EP-26010,Compressor Room Controls,2.5,HMI dev
+2026-04-02,Maria Novak,EP-26004,Conveyor Retrofit Line 4,8.5,troubleshooting
+2026-04-02,Wei Garcia,EP-26005,Palletizer Controls Rebuild,8,panel wiring
+2026-04-03,Aisha Lopez,EP26016,Legacy PLC Modernization - Assembly,8.5,customer meeting
+2026-04-03,Maria Tanaka,EP-26007,Batch System Validation,4.5,drawings
+2026-04-03,James Becker,EP-26010,Compressor Room Controls,8,drawings
+2026-04-03,Aisha Petrov,EP-26002,SCADA System Upgrade,6,HMI dev
+2026-04-03,James Sharma,EP-26006,Vision Inspection Station,8.5,site commissioning
+2026-04-03,Wei Petrov,EP-26006,Vision Inspection Station,6.5,drawings
+2026-04-03,Aisha Novak,EP-26008,Safety System Upgrade Press Shop,8,site commissioning
+2026-04-03,Maria Sharma,EP-26016,Legacy PLC Modernization - Assembly,8.5,FAT testing
+2026-04-04,Carlos Smith,EP-26011,Annual Service Contract - Plant 3,6,drawings
+2026-04-04,James Tanaka,EP-26007,Batch System Validation,4,troubleshooting
+2026-04-05,Maria Tanaka,EP-26020,Downtime Tracking System Rollout,8,startup support
+2026-04-05,Carlos Sharma,EP26003,Robotic Weld Cell Install,6,HMI dev
+2026-04-06,James Petrov,EP-26012,Panel Shop Build - 12 Enclosures,2,FAT testing
+2026-04-06,Maria Brown,EP-26014,AGV Route Expansion,4.5,troubleshooting
+2026-04-06,Maria Iyer,,Furnace Temperature Control Retrofit,2.5,site commissioning
+2026-04-06,Wei Costa,ep-26012,Panel Shop Build - 12 Enclosures,4.5,panel wiring
+2026-04-06,James Garcia,EP-26003,Robotic Weld Cell Install,4.5,site commissioning
+2026-04-06,Carlos Khan,,Wastewater pH Control Upgrade,8.5,FAT testing
+2026-04-07,Wei Khan,EP-26008,Safety System Upgrade Press Shop,4.5,startup support
+2026-04-07,James Ali,EP-26018,Weld Automation Cell - Body Shop,2.5,panel wiring
+2026-04-07,Aisha Hassan,EP-26019,Line 4 Conveyance Modernization,6.5,documentation
+2026-04-07,Carlos Garcia,EP-26008,Safety System Upgrade Press Shop,6.5,troubleshooting
+2026-04-07,James Costa,EP-26017,Plant SCADA Modernization,4.5,PLC programming
+2026-04-08,Carlos Costa,EP-26009,MES Integration Phase 1,2.5,troubleshooting
+2026-04-08,James Petrov,EP-26017,Plant SCADA Modernization,4,HMI dev
+2026-04-08,Maria Brown,EP26009,MES Integration Phase 1,6,drawings
+2026-04-09,Aisha Ali,EP-26011,Annual Service Contract - Plant 3,4,documentation
+2026-04-09,James Smith,EP-26018,Weld Automation Cell - Body Shop,8,documentation
+2026-04-09,Maria Hassan,EP-26007,Batch System Validation,4,customer meeting
+2026-04-09,James Wright,EP-26008,Safety System Upgrade Press Shop,4,site commissioning
+2026-04-09,Carlos Lopez,,MES Integration Phase 1,6.5,documentation
+2026-04-09,James Wright,EP-26013,Wastewater pH Control Upgrade,4.5,documentation
+2026-04-10,Carlos Sharma,EP-26013,Wastewater pH Control Upgrade,6.5,panel wiring
+2026-04-10,Wei Sharma,EP-26010,Compressor Room Controls,8.5,HMI dev
+2026-04-10,Carlos Singh,EP-26002,SCADA System Upgrade,4.5,documentation
+2026-04-11,Maria Orlov,EP-26005,Palletizer Controls Rebuild,6.5,FAT testing
+2026-04-11,Maria Brown,EP-26001,PLC-5 to ControlLogix Migration,2,troubleshooting
+2026-04-12,Maria Brown,EP-26018,Weld Automation Cell - Body Shop,6.5,FAT testing
+2026-04-12,Carlos Smith,EP-26015,Furnace Temperature Control Retrofit,2,FAT testing
+2026-04-13,James Khan,EP-26008,Safety System Upgrade Press Shop,4,troubleshooting
+2026-04-13,Carlos Ali,EP-26001,PLC-5 to ControlLogix Migration,8,panel wiring
+2026-04-13,Aisha Sharma,EP-26003,Robotic Weld Cell Install,8,panel wiring
+2026-04-14,Maria Ali,EP-26008,Safety System Upgrade Press Shop,2,panel wiring
+2026-04-14,Aisha Ali,EP-26010,Compressor Room Controls,2.5,HMI dev
+2026-04-14,James Mendez,EP-26005,Palletizer Controls Rebuild,2,startup support
+2026-04-14,Carlos Brown,EP-26004,Conveyor Retrofit Line 4,4.5,PLC programming
+2026-04-15,Aisha Garcia,EP-26004,Conveyor Retrofit Line 4,8.5,PLC programming
+2026-04-15,Wei Smith,EP-26005,Palletizer Controls Rebuild,2,customer meeting
+2026-04-15,Maria Hassan,EP26001,PLC-5 to ControlLogix Migration,8.5,HMI dev
+2026-04-15,Carlos Hassan,ep-26020,Downtime Tracking System Rollout,4.5,startup support
+2026-04-15,Wei Khan,,Plant SCADA Modernization,8,site commissioning
+2026-04-16,Wei Brown,EP-26006,Vision Inspection Station,8.5,startup support
+2026-04-16,James Iyer,EP-26018,Weld Automation Cell - Body Shop,8,PLC programming
+2026-04-16,James Hassan,EP-26012,Panel Shop Build - 12 Enclosures,6.5,troubleshooting
+2026-04-16,Carlos Mendez,EP-26020,Downtime Tracking System Rollout,4,site commissioning
+2026-04-17,Maria Kim,EP-26017,Plant SCADA Modernization,6,troubleshooting
+2026-04-17,Maria Becker,EP-26007,Batch System Validation,4.5,HMI dev
+2026-04-17,Wei Novak,EP-26011,Annual Service Contract - Plant 3,4,drawings
+2026-04-17,Wei Khan,EP-26001,PLC-5 to ControlLogix Migration,8,customer meeting
+2026-04-17,Maria Wright,EP-26012,Panel Shop Build - 12 Enclosures,6,documentation
+2026-04-18,Aisha Petrov,EP-26013,Wastewater pH Control Upgrade,2.5,FAT testing
+2026-04-18,James Kim,EP-26001,PLC-5 to ControlLogix Migration,6,site commissioning
+2026-04-18,Carlos Smith,EP-26011,Annual Service Contract - Plant 3,4.5,startup support
+2026-04-18,Carlos Sharma,EP-26011,Annual Service Contract - Plant 3,6.5,startup support
+2026-04-18,Carlos Kim,EP-26016,Legacy PLC Modernization - Assembly,8,customer meeting
+2026-04-19,Aisha Liu,EP-26014,AGV Route Expansion,2,customer meeting
+2026-04-19,James Ali,EP-26019,Line 4 Conveyance Modernization,8.5,startup support
+2026-04-19,Wei Novak,EP-26009,MES Integration Phase 1,4.5,startup support
+2026-04-19,Maria Khan,EP-26003,Robotic Weld Cell Install,2.5,customer meeting
+2026-04-19,Aisha Kim,EP-26009,MES Integration Phase 1,2,documentation
+2026-04-20,Maria Petrov,EP-26017,Plant SCADA Modernization,2,startup support
+2026-04-20,Wei Iyer,EP-26005,Palletizer Controls Rebuild,2,site commissioning
+2026-04-21,Wei Lopez,EP-26020,Downtime Tracking System Rollout,2,customer meeting
+2026-04-21,James Orlov,EP-26002,SCADA System Upgrade,6,drawings
+2026-04-21,Aisha Kim,EP-26014,AGV Route Expansion,4,customer meeting
+2026-04-21,Aisha Petrov,EP-26004,Conveyor Retrofit Line 4,2.5,FAT testing
+2026-04-21,James Hassan,EP-26001,PLC-5 to ControlLogix Migration,8.5,drawings
+2026-04-21,Aisha Sharma,EP-26018,Weld Automation Cell - Body Shop,6.5,HMI dev
+2026-04-22,Aisha Khan,EP-26015,Furnace Temperature Control Retrofit,8.5,site commissioning
+2026-04-22,Aisha Hassan,EP-26014,AGV Route Expansion,4,HMI dev
+2026-04-22,Wei Novak,EP-26019,Line 4 Conveyance Modernization,8.5,HMI dev
+2026-04-22,Aisha Hassan,EP-26011,Annual Service Contract - Plant 3,6,troubleshooting
+2026-04-22,James Brown,EP-26015,Furnace Temperature Control Retrofit,4.5,panel wiring
+2026-04-22,Maria Garcia,EP-26019,Line 4 Conveyance Modernization,4,drawings
+2026-04-22,Aisha Garcia,EP-26005,Palletizer Controls Rebuild,4,panel wiring
+2026-04-22,James Brown,EP-26019,Line 4 Conveyance Modernization,8,documentation
+2026-04-22,Wei Wright,EP-26009,MES Integration Phase 1,4,HMI dev
+2026-04-22,Maria Orlov,EP-26018,Weld Automation Cell - Body Shop,4,drawings
+2026-04-22,James Smith,EP-26020,Downtime Tracking System Rollout,4,HMI dev
+2026-04-23,Carlos Singh,EP-26009,MES Integration Phase 1,2,PLC programming
+2026-04-23,Wei Mendez,EP-26020,Downtime Tracking System Rollout,6.5,FAT testing
+2026-04-23,James Wright,EP-26009,MES Integration Phase 1,8.5,HMI dev
+2026-04-24,Wei Novak,EP-26018,Weld Automation Cell - Body Shop,6.5,drawings
+2026-04-24,Maria Brown,EP-26001,PLC-5 to ControlLogix Migration,6,customer meeting
+2026-04-25,James Costa,EP-26010,Compressor Room Controls,4.5,PLC programming
+2026-04-25,Wei Brown,EP-26008,Safety System Upgrade Press Shop,6.5,troubleshooting
+2026-04-25,Aisha Becker,EP-26019,Line 4 Conveyance Modernization,4,panel wiring
+2026-04-25,Aisha Costa,,AGV Route Expansion,4.5,panel wiring
+2026-04-25,James Lopez,EP-26020,Downtime Tracking System Rollout,6.5,documentation
+2026-04-25,Wei Becker,EP-26019,Line 4 Conveyance Modernization,4.5,FAT testing
+2026-04-25,James Petrov,EP-26014,AGV Route Expansion,6,HMI dev
+2026-04-25,James Iyer,EP-26015,Furnace Temperature Control Retrofit,2.5,HMI dev
+2026-04-25,James Khan,EP-26006,Vision Inspection Station,4,site commissioning
+2026-04-26,Carlos Tanaka,EP-26020,Downtime Tracking System Rollout,6.5,PLC programming
+2026-04-26,Carlos Khan,EP-26005,Palletizer Controls Rebuild,4.5,drawings
+2026-04-26,Aisha Iyer,EP-26005,Palletizer Controls Rebuild,4,documentation
+2026-04-26,Wei Iyer,EP-26003,Robotic Weld Cell Install,4,FAT testing
+2026-04-26,Carlos Brown,EP-26004,Conveyor Retrofit Line 4,4,PLC programming
+2026-04-26,Carlos Smith,EP-26002,SCADA System Upgrade,6.5,customer meeting
+2026-04-26,Wei Khan,EP-26011,Annual Service Contract - Plant 3,6,HMI dev
+2026-04-27,Maria Brown,EP-26002,SCADA System Upgrade,8.5,panel wiring
+2026-04-27,James Liu,EP-26004,Conveyor Retrofit Line 4,2.5,drawings
+2026-04-27,Aisha Tanaka,EP-26008,Safety System Upgrade Press Shop,6.5,documentation
+2026-04-27,Maria Ali,EP-26010,Compressor Room Controls,2,drawings
+2026-04-27,Maria Becker,EP-26020,Downtime Tracking System Rollout,2.5,panel wiring
+2026-04-27,Aisha Wright,EP-26002,SCADA System Upgrade,4.5,panel wiring
+2026-04-28,Carlos Becker,EP-26009,MES Integration Phase 1,6.5,HMI dev
+2026-04-28,Carlos Smith,EP-26011,Annual Service Contract - Plant 3,8.5,documentation
+2026-04-28,Maria Brown,EP-26019,Line 4 Conveyance Modernization,4,PLC programming
+2026-04-28,James Garcia,EP-26013,Wastewater pH Control Upgrade,2.5,startup support
+2026-05-01,Wei Kim,ep-26001,PLC-5 to ControlLogix Migration,4,HMI dev
+2026-05-01,James Becker,ep-26012,Panel Shop Build - 12 Enclosures,6.5,panel wiring
+2026-05-01,Wei Costa,EP-26004,Conveyor Retrofit Line 4,4,FAT testing
+2026-05-01,Wei Khan,EP26008,Safety System Upgrade Press Shop,4.5,drawings
+2026-05-01,James Brown,EP-26003,Robotic Weld Cell Install,6,HMI dev
+2026-05-02,Maria Singh,EP-26011,Annual Service Contract - Plant 3,6.5,troubleshooting
+2026-05-02,James Hassan,EP-26002,SCADA System Upgrade,2.5,HMI dev
+2026-05-02,Maria Hassan,EP-26002,SCADA System Upgrade,4.5,site commissioning
+2026-05-03,Carlos Costa,,Weld Automation Cell - Body Shop,8.5,PLC programming
+2026-05-03,Maria Becker,EP-26001,PLC-5 to ControlLogix Migration,8,FAT testing
+2026-05-03,James Costa,EP-26017,Plant SCADA Modernization,6,drawings
+2026-05-03,Wei Lopez,EP-26004,Conveyor Retrofit Line 4,4.5,startup support
+2026-05-03,James Sharma,EP-26012,Panel Shop Build - 12 Enclosures,2.5,troubleshooting
+2026-05-04,Maria Smith,,Furnace Temperature Control Retrofit,8.5,panel wiring
+2026-05-04,Wei Tanaka,EP26002,SCADA System Upgrade,4.5,startup support
+2026-05-04,Wei Garcia,EP-26016,Legacy PLC Modernization - Assembly,8,HMI dev
+2026-05-05,Wei Petrov,EP-26002,SCADA System Upgrade,2,HMI dev
+2026-05-05,Maria Brown,EP-26009,MES Integration Phase 1,4.5,drawings
+2026-05-05,James Liu,EP-26001,PLC-5 to ControlLogix Migration,4,site commissioning
+2026-05-05,Maria Ali,EP-26001,PLC-5 to ControlLogix Migration,2.5,PLC programming
+2026-05-05,Carlos Garcia,EP-26006,Vision Inspection Station,2.5,troubleshooting
+2026-05-06,James Iyer,EP-26012,Panel Shop Build - 12 Enclosures,2.5,troubleshooting
+2026-05-06,James Mendez,EP-26020,Downtime Tracking System Rollout,2,PLC programming
+2026-05-06,Maria Mendez,EP-26019,Line 4 Conveyance Modernization,6.5,drawings
+2026-05-07,Maria Kim,EP-26015,Furnace Temperature Control Retrofit,2,drawings
+2026-05-07,Wei Iyer,EP-26013,Wastewater pH Control Upgrade,6.5,panel wiring
+2026-05-07,Wei Brown,EP-26010,Compressor Room Controls,6,startup support
+2026-05-07,Aisha Becker,EP-26002,SCADA System Upgrade,8.5,customer meeting
+2026-05-08,Wei Singh,EP26016,Legacy PLC Modernization - Assembly,4,drawings
+2026-05-08,Wei Tanaka,EP-26007,Batch System Validation,2,site commissioning
+2026-05-09,Aisha Petrov,EP-26012,Panel Shop Build - 12 Enclosures,4.5,site commissioning
+2026-05-09,Carlos Becker,EP-26002,SCADA System Upgrade,6,startup support
+2026-05-09,Aisha Khan,EP-26015,Furnace Temperature Control Retrofit,2,customer meeting
+2026-05-09,James Orlov,EP-26009,MES Integration Phase 1,6,documentation
+2026-05-09,Wei Becker,EP-26019,Line 4 Conveyance Modernization,4.5,customer meeting
+2026-05-09,Wei Wright,EP26006,Vision Inspection Station,6,FAT testing
+2026-05-10,Carlos Costa,EP-26013,Wastewater pH Control Upgrade,2,FAT testing
+2026-05-10,Carlos Lopez,EP-26006,Vision Inspection Station,6,panel wiring
+2026-05-11,James Garcia,EP-26014,AGV Route Expansion,6,FAT testing
+2026-05-11,James Petrov,EP-26017,Plant SCADA Modernization,8,PLC programming
+2026-05-12,James Mendez,EP-26001,PLC-5 to ControlLogix Migration,2.5,PLC programming
+2026-05-13,Carlos Khan,,Plant SCADA Modernization,4,PLC programming
+2026-05-13,Aisha Wright,EP-26008,Safety System Upgrade Press Shop,8,drawings
+2026-05-13,Aisha Smith,EP-26003,Robotic Weld Cell Install,4.5,customer meeting
+2026-05-13,Wei Tanaka,ep-26012,Panel Shop Build - 12 Enclosures,8,panel wiring
+2026-05-14,Maria Kim,EP-26020,Downtime Tracking System Rollout,8.5,customer meeting
+2026-05-14,Carlos Smith,EP-26011,Annual Service Contract - Plant 3,4.5,documentation
+2026-05-14,Carlos Brown,EP-26017,Plant SCADA Modernization,2,panel wiring
+2026-05-14,Maria Petrov,EP-26002,SCADA System Upgrade,2,troubleshooting
+2026-05-15,Aisha Kim,EP-26002,SCADA System Upgrade,2,troubleshooting
+2026-05-15,Aisha Singh,EP-26012,Panel Shop Build - 12 Enclosures,8,HMI dev
+2026-05-15,Aisha Brown,EP-26017,Plant SCADA Modernization,4.5,documentation
+2026-05-15,Aisha Kim,EP-26008,Safety System Upgrade Press Shop,4.5,startup support
+2026-05-15,Maria Lopez,EP-26005,Palletizer Controls Rebuild,6,PLC programming
+2026-05-16,Carlos Brown,EP-26018,Weld Automation Cell - Body Shop,6,FAT testing
+2026-05-16,Aisha Costa,EP-26007,Batch System Validation,4.5,FAT testing
+2026-05-16,Wei Ali,EP-26003,Robotic Weld Cell Install,8,panel wiring
+2026-05-16,James Becker,EP-26009,MES Integration Phase 1,6,site commissioning
+2026-05-17,James Brown,EP-26008,Safety System Upgrade Press Shop,6.5,documentation
+2026-05-17,Wei Sharma,EP-26020,Downtime Tracking System Rollout,2,site commissioning
+2026-05-18,Maria Becker,EP-26013,Wastewater pH Control Upgrade,2,customer meeting
+2026-05-18,Carlos Mendez,EP-26011,Annual Service Contract - Plant 3,4.5,customer meeting
+2026-05-18,Carlos Lopez,EP-26010,Compressor Room Controls,6,site commissioning
+2026-05-19,James Liu,EP-26005,Palletizer Controls Rebuild,4,panel wiring
+2026-05-19,Carlos Lopez,EP-26001,PLC-5 to ControlLogix Migration,4.5,customer meeting
+2026-05-19,Maria Brown,EP-26013,Wastewater pH Control Upgrade,4,startup support
+2026-05-19,Wei Khan,EP-26016,Legacy PLC Modernization - Assembly,2,drawings
+2026-05-19,Maria Wright,EP-26006,Vision Inspection Station,4,customer meeting
+2026-05-19,Carlos Smith,EP-26006,Vision Inspection Station,2,site commissioning
+2026-05-19,Aisha Sharma,EP-26009,MES Integration Phase 1,2.5,HMI dev
+2026-05-19,Maria Tanaka,EP-26005,Palletizer Controls Rebuild,8,drawings
+2026-05-20,Aisha Sharma,EP-26011,Annual Service Contract - Plant 3,4.5,troubleshooting
+2026-05-20,Wei Brown,EP-26012,Panel Shop Build - 12 Enclosures,6,troubleshooting
+2026-05-20,Wei Costa,EP-26018,Weld Automation Cell - Body Shop,8.5,troubleshooting
+2026-05-20,Wei Singh,EP-26006,Vision Inspection Station,4,site commissioning
+2026-05-21,James Mendez,EP-26016,Legacy PLC Modernization - Assembly,2.5,documentation
+2026-05-21,Carlos Liu,EP-26007,Batch System Validation,8,documentation
+2026-05-21,Aisha Petrov,EP-26007,Batch System Validation,8,troubleshooting
+2026-05-21,James Garcia,EP-26001,PLC-5 to ControlLogix Migration,6,site commissioning
+2026-05-22,James Iyer,EP-26012,Panel Shop Build - 12 Enclosures,8,site commissioning
+2026-05-22,Carlos Lopez,EP-26020,Downtime Tracking System Rollout,4.5,panel wiring
+2026-05-22,James Hassan,EP-26005,Palletizer Controls Rebuild,4,troubleshooting
+2026-05-22,Carlos Ali,EP-26019,Line 4 Conveyance Modernization,8.5,documentation
+2026-05-22,Wei Iyer,EP-26004,Conveyor Retrofit Line 4,4.5,customer meeting
+2026-05-23,Wei Petrov,EP-26003,Robotic Weld Cell Install,6,troubleshooting
+2026-05-23,Carlos Singh,EP-26019,Line 4 Conveyance Modernization,6.5,panel wiring
+2026-05-23,Carlos Tanaka,ep-26011,Annual Service Contract - Plant 3,6,PLC programming
+2026-05-23,James Novak,EP-26020,Downtime Tracking System Rollout,4,startup support
+2026-05-24,James Costa,EP-26006,Vision Inspection Station,2.5,documentation
+2026-05-24,Wei Ali,EP-26007,Batch System Validation,2.5,customer meeting
+2026-05-24,Wei Kim,EP-26001,PLC-5 to ControlLogix Migration,2,customer meeting
+2026-05-24,Maria Iyer,EP-26004,Conveyor Retrofit Line 4,2.5,panel wiring
+2026-05-24,Aisha Novak,EP-26004,Conveyor Retrofit Line 4,6.5,panel wiring
+2026-05-25,Carlos Iyer,EP-26015,Furnace Temperature Control Retrofit,2.5,startup support
+2026-05-25,Maria Costa,EP-26015,Furnace Temperature Control Retrofit,2,PLC programming
+2026-05-26,Aisha Khan,,Vision Inspection Station,4.5,drawings
+2026-05-26,James Lopez,,Conveyor Retrofit Line 4,2.5,documentation
+2026-05-26,James Hassan,,Compressor Room Controls,6,documentation
+2026-05-26,Maria Becker,EP-26019,Line 4 Conveyance Modernization,6,site commissioning
+2026-05-27,Aisha Becker,EP-26012,Panel Shop Build - 12 Enclosures,8,documentation
+2026-05-27,Wei Garcia,ep-26018,Weld Automation Cell - Body Shop,2.5,site commissioning
+2026-05-27,Maria Smith,EP-26010,Compressor Room Controls,4,documentation
+2026-05-28,Carlos Smith,EP-26013,Wastewater pH Control Upgrade,6.5,FAT testing
+2026-05-28,Aisha Kim,EP-26014,AGV Route Expansion,4.5,site commissioning
