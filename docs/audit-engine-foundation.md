@@ -2,9 +2,9 @@
 
 ## Why The Audit Engine Comes First
 
-I do not want epm-insights to begin with the interface. I want it to begin with the audit logic.
+The project should not begin with the interface. It should begin with the audit logic.
 
-The purpose of the audit engine is to define how project and program performance should be judged. Once that logic is reliable, the dashboard, reports, and intelligent insights layer can be built around it.
+The purpose of the audit engine is to define how project performance will be judged. Once that logic is reliable, the dashboard and reports can be built around it.
 
 ## Audit Perspective
 
@@ -13,13 +13,13 @@ The audit should answer four practical questions:
 1. What was expected?
 2. What actually happened?
 3. How far apart are expected and actual performance?
-4. What does that difference mean for the project, program, team, and business?
+4. What does that difference mean for the project, team, and business?
 
 ## Primary Audit Areas
 
 ### Budget
 
-The budget audit checks whether the work stayed within its expected financial position.
+The budget audit checks whether the project stayed within its expected financial position.
 
 Key checks:
 
@@ -31,7 +31,7 @@ Key checks:
 
 ### Hours
 
-The hours audit checks whether labor was used as expected.
+The hours audit checks whether the project used labor as expected.
 
 Key checks:
 
@@ -66,7 +66,7 @@ Key checks:
 
 ### Schedule
 
-The schedule audit checks whether the timeline stayed within the expected path.
+The schedule audit checks whether the project timeline stayed within the expected path.
 
 Key checks:
 
@@ -81,11 +81,11 @@ Key checks:
 
 The project score combines the audit areas into a simple health view.
 
-For the first version, I will use:
+Recommended first version:
 
-- Green: performance is within expected range
-- Yellow: performance needs attention
-- Red: performance has material risk or a major performance gap
+- Green: project is performing within expected range
+- Yellow: project needs attention
+- Red: project has material risk or performance gap
 
 Later versions can add a numeric score from 0 to 100.
 
@@ -111,8 +111,8 @@ flowchart TD
     D --> E[Calculate Variances]
     E --> F[Apply Thresholds]
     F --> G[Assign Health Status]
-    G --> H[Generate Audit Findings]
-    H --> I[Prepare Report Output]
+    G --> H[Generate Findings]
+    H --> I[Prepare Report]
 ```
 
 ## Project State Diagram
