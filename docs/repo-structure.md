@@ -1,6 +1,6 @@
 # Repository Structure Plan
 
-This structure keeps the project organized for both learning and application development.
+This structure keeps epm-insights organized as the audit engine, reporting workflow, dashboard, and intelligent insights layer grow.
 
 ```text
 epm-insights/
@@ -34,13 +34,17 @@ epm-insights/
 
 | Folder | Purpose |
 |---|---|
-| docs | Project thinking, audit framework, planning, and learning notes |
+| docs | Project overview, audit framework, planning, and technical notes |
 | data/sample | Synthetic data only |
 | sql | SQL queries used for audit analysis |
-| notebooks | Learning experiments and data exploration |
+| notebooks | Analysis experiments and metric validation |
 | src | Reusable application code |
 | tests | Validation checks for audit logic |
 
 ## Data Privacy Rule
 
 Only synthetic or public data should be committed to the repository. Real company data should stay local and outside version control.
+
+## Project Ownership
+
+Author and project owner: Syeda
