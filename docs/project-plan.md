@@ -4,7 +4,7 @@
 
 This plan defines how I will build epm-insights in practical phases. The project starts with the audit engine because the evaluation logic needs to be solid before the dashboard, reports, or intelligent insights layer can be useful.
 
-epm-insights is an Engineering Program/Project Management audit and evaluation system for engineering and industrial automation projects.
+epm-insights is an AI-assisted project analysis and audit system for Engineering Program/Project Managers.
 
 ## Build Strategy
 

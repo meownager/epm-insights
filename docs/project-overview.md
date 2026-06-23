@@ -1,10 +1,12 @@
-# EPM Insights Project Overview
+# epm-insights Project Overview
 
 ## Purpose
 
-EPM Insights is designed to help engineering project managers audit project performance using proposal expectations, actual project data, and standard project health metrics.
+epm-insights is an AI-assisted project analysis and audit system for Engineering Program/Project Managers.
 
-The project focuses on turning project records into a clear performance view. It is meant to show what was planned, what actually happened, where the variance occurred, and what should be carried forward into future estimating and execution.
+I am building it to compare proposal expectations with actual performance, evaluate completed or paused work against defined audit metrics, and generate project health and post-mortem reports that are clear enough to use in real review conversations.
+
+The focus is structured evaluation supported by data analytics and an intelligent insights layer. epm-insights is designed to show what was planned, what changed, where performance moved away from the original expectation, and what that means for future estimating, execution, project control, and program-level visibility.
 
 ## Target User
 
@@ -14,7 +16,7 @@ The first version is designed for individual project review. Once the workflow i
 
 Engineering project managers often need to understand whether a project performed as expected. That review usually requires checking estimates, hours, rates, resource usage, billing status, deadlines, change orders, and final outcomes across multiple files.
 
-EPM Insights brings that information into one local workflow so each project can be reviewed with the same structure and the same performance logic.
+epm-insights brings that information into one workflow so I can review each project or program with the same structure and the same performance logic.
 
 ## Core Inputs
 
@@ -87,3 +89,7 @@ Future versions may include:
 - Risk classification using machine learning
 - Anomaly detection for unusual hours, billing, or schedule patterns
 - Optional local-only report assistance
+
+## Project Ownership
+
+Author and project owner: Syeda
