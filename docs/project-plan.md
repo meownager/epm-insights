@@ -1,12 +1,14 @@
-# epm-insights Project Plan
+# epm-insights 
 
-## Purpose
+## Project Plan
+
+### Purpose
 
 This plan defines how I will build epm-insights in practical phases. The project starts with the audit engine because the evaluation logic needs to be solid before the dashboard, reports, or intelligent insights layer can be useful.
 
 epm-insights is an AI-assisted project analysis and audit system for Engineering Program/Project Managers.
 
-## Build Strategy
+### Build Strategy
 
 I will build the system in layers:
 
@@ -18,7 +20,7 @@ I will build the system in layers:
 
 Each layer should be useful on its own before the next layer depends on it.
 
-## System Workflow
+### System Workflow
 
 ```mermaid
 flowchart TD
@@ -39,7 +41,7 @@ flowchart TD
     L --> N
 ```
 
-## Phase 1: Data Foundation
+### Phase 1: Data Foundation
 
 Goal: prepare the data structure that the audit engine will depend on.
 
@@ -57,7 +59,7 @@ Expected output:
 - A clear schema for proposal, actual, financial, and time-entry data
 - A repeatable data loading path
 
-## Phase 2: Audit Engine
+### Phase 2: Audit Engine
 
 Goal: create the logic that evaluates project and program performance.
 
@@ -78,7 +80,7 @@ Expected output:
 - A repeatable project health score
 - A basic audit summary for each project
 
-## Phase 3: Reporting Workflow
+### Phase 3: Reporting Workflow
 
 Goal: turn audit results into useful review outputs.
 
@@ -94,7 +96,7 @@ Expected output:
 - Project health report
 - Project audit report
 
-## Phase 4: Dashboard
+### Phase 4: Dashboard
 
 Goal: make the audit engine easier to use and review.
 
@@ -110,7 +112,7 @@ Expected output:
 
 - A working dashboard for reviewing project and program performance
 
-## Phase 5: Intelligent Insights Layer
+### Phase 5: Intelligent Insights Layer
 
 Goal: add intelligent support only where it improves the quality of project review.
 
@@ -161,5 +163,5 @@ Suggested commit sequence:
 
 ## Project Ownership
 
-Author and project owner: Syeda
+Author and project owner: Syeda M. (smonowar@purdue.edu)
 
