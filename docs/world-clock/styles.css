@@ -1,0 +1,134 @@
+:root {
+  color-scheme: light dark;
+  --bg: #0b1220;
+  --card: #121b2d;
+  --text: #e9eefc;
+  --muted: #a5b2d3;
+  --accent: #5ea1ff;
+  --danger: #ff6b6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: linear-gradient(180deg, #0b1220 0%, #070b14 100%);
+  color: var(--text);
+}
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+header p {
+  margin-top: 0.4rem;
+  color: var(--muted);
+}
+
+.controls {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-zone {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+select,
+button {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--card);
+  color: var(--text);
+  padding: 0.45rem 0.65rem;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+.clock-list {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 0.8rem;
+}
+
+.clock-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.zone-label {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.zone-id {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+.time {
+  margin: 0;
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: right;
+}
+
+.time-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.remove-btn {
+  font-size: 0.78rem;
+  border-color: rgba(255, 107, 107, 0.35);
+}
+
+.remove-btn:hover {
+  border-color: var(--danger);
+}
