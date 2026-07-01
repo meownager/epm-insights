@@ -1,62 +1,120 @@
-# Completed Project Health Analysis (Deviation from Proposed Values)
+# Completed Project Health MVP
 
-This document defines the primary-scope analysis for **completed projects**.
+## Purpose
 
-Status compatibility:
-- Includes projects with `status` set to either `completed` or `closed`.
+This MVP audits completed engineering projects by comparing the proposed baseline against the actual outcome.
 
-## Objective
+The goal is not to punish a project with a rigid score. The goal is to give project managers and leadership a clear, repeatable view of where the project moved away from the plan and what should be reviewed during closeout.
 
-Measure deviation between proposed and actual values, then classify project health using transparent threshold rules.
+## Immediate Scope
 
-## Input data (minimum)
+For each completed project, calculate deviation for:
 
-### `proposal_projects.csv`
+- Budget
+- Hours
+- Duration or schedule
+- Resource count, when available
+
+This phase does not include active-project forecasting, sprint analysis, vendor scoring, AI recommendations, or dashboard visuals.
+
+## Required Input Files
+
+### proposal_projects.csv
+
+Baseline or planned project values.
+
 Required columns:
+
 - `project_id`
+- `project_name`
 - `proposed_budget`
 - `proposed_hours`
 - `proposed_start_date`
 - `proposed_end_date`
-- `proposed_resource_count` *(optional but recommended)*
 
-### `actual_projects.csv`
+Optional columns:
+
+- `proposed_resource_count`
+- `project_manager`
+- `client`
+- `project_type`
+
+### actual_projects.csv
+
+Actual project outcome values.
+
 Required columns:
+
 - `project_id`
 - `actual_budget`
 - `actual_hours`
 - `actual_start_date`
 - `actual_end_date`
-- `status` *(accepted values: `completed` or `closed`)*
-- `actual_resource_count` *(optional but recommended)*
+- `status`
+
+Optional columns:
+
+- `actual_resource_count`
+- `closeout_notes`
+
+Accepted status values:
+
+- `completed`
+- `closed`
+
+Use `completed` as the preferred project language. `closed` is accepted only for compatibility with source systems that use that status label.
 
 ## Metrics
 
-- `budget_dev_abs = actual_budget - proposed_budget`
-- `budget_dev_pct = (actual_budget - proposed_budget) / proposed_budget`
-- `hours_dev_abs = actual_hours - proposed_hours`
-- `hours_dev_pct = (actual_hours - proposed_hours) / proposed_hours`
-- `schedule_dev_days = actual_end_date - proposed_end_date`
-- `proposed_duration_days = proposed_end_date - proposed_start_date`
-- `actual_duration_days = actual_end_date - actual_start_date`
-- `schedule_dev_pct = (actual_duration_days - proposed_duration_days) / proposed_duration_days`
-- `resource_dev_abs = actual_resource_count - proposed_resource_count` *(if available)*
-- `resource_dev_pct = (actual_resource_count - proposed_resource_count) / proposed_resource_count` *(if available)*
+| Metric | Formula | Meaning |
+|---|---|---|
+| `budget_dev_abs` | `actual_budget - proposed_budget` | Dollar difference from proposed budget |
+| `budget_dev_pct` | `(actual_budget - proposed_budget) / proposed_budget` | Budget variance percentage |
+| `hours_dev_abs` | `actual_hours - proposed_hours` | Labor-hour difference from estimate |
+| `hours_dev_pct` | `(actual_hours - proposed_hours) / proposed_hours` | Hours variance percentage |
+| `schedule_dev_days` | `actual_end_date - proposed_end_date` | Days late or early against planned end date |
+| `schedule_dev_pct` | `(actual_duration_days - proposed_duration_days) / proposed_duration_days` | Duration variance percentage |
+| `resource_dev_abs` | `actual_resource_count - proposed_resource_count` | Resource-count difference, when available |
+| `resource_dev_pct` | `(actual_resource_count - proposed_resource_count) / proposed_resource_count` | Resource-count variance percentage, when available |
 
-## Health rules (v1)
+## Advisory Health Rules
 
-- **Green**: `|budget_dev_pct| <= 10%` AND `|hours_dev_pct| <= 10%` AND `schedule_dev_days <= 5`
-- **Yellow**: `|budget_dev_pct| <= 20%` AND `|hours_dev_pct| <= 20%` AND `schedule_dev_days <= 15`
-- **Red**: everything else
+The first thresholds should be forgiving because this is a calibration version. The colors are review signals, not final judgments.
 
-## SQL implementation
+Default v1 thresholds:
+
+| Health | Budget | Hours | Schedule Slip |
+|---|---:|---:|---:|
+| Green | within +/- 15% | within +/- 15% | <= 7 days late |
+| Yellow | within +/- 30% | within +/- 30% | <= 21 days late |
+| Red | beyond yellow range | beyond yellow range | > 21 days late |
+
+Classification logic:
+
+- Green means all required metrics are within the green range.
+- Yellow means at least one required metric is outside green, but all required metrics are within yellow.
+- Red means at least one required metric is outside yellow.
+
+Resource count is included in the detail output when available, but it should not drive the first health color until enough real project history exists to calibrate useful thresholds.
+
+## Outputs
+
+The MVP should produce:
+
+- Project-level health table
+- Summary counts by Green, Yellow, and Red
+- Simple findings explaining the largest deviations
+
+## SQL Implementation
 
 Use:
+
 - `sql/completed_project_health.sql`
 
-## Python runner
+## Python Runner
 
 Use:
+
 - `scripts/completed_project_health.py`
 
 Run:
@@ -69,5 +127,40 @@ python scripts/completed_project_health.py \
 ```
 
 Outputs:
+
 - `outputs/completed_project_health_detail.csv`
 - `outputs/completed_project_health_summary.csv`
+
+## Short Report Template
+
+```markdown
+# Completed Project Audit Report
+
+## Project Summary
+
+- Project:
+- Project Manager:
+- Client:
+- Final Health:
+
+## Proposed vs Actual
+
+| Area | Proposed | Actual | Deviation |
+|---|---:|---:|---:|
+| Budget |  |  |  |
+| Hours |  |  |  |
+| Schedule |  |  |  |
+| Resources |  |  |  |
+
+## Key Findings
+
+-
+
+## Closeout Notes
+
+-
+
+## Recommended Follow-Up
+
+-
+```
