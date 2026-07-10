@@ -1,4 +1,4 @@
-# epm-insights 
+# epm-insights
 
 ## Project Overview
 
@@ -6,23 +6,33 @@
 
 epm-insights is an AI-assisted project analysis and audit system for Engineering Program/Project Managers.
 
-I am building it to compare proposal expectations with actual performance, evaluate completed or paused work against defined audit metrics, and generate project health and post-mortem reports that are clear enough to use in real review conversations.
+It compares proposal expectations with actual performance, evaluates approved work against defined audit criteria, and generates project health and post-mortem reports that are clear enough to use in real review conversations.
 
-The focus is structured evaluation supported by data analytics and an intelligent insights layer. epm-insights is designed to show what was planned, what changed, where performance moved away from the original expectation, and what that means for future estimating, execution, project control, and program-level visibility.
+The focus is structured evaluation supported by data analytics and an intelligent insights layer. epm-insights shows what was planned, what changed, where performance moved away from the original expectation, and what that means for future estimating, execution, project control, and program-level visibility.
+
+Every part of the system follows a documented Quality Framework so that the audit process itself is defined, controlled, measurable, and improvable. When an external auditor reviews the system, they can map their own checklist to it quickly using the External Audit Alignment Map.
+
+### Audit Scope
+
+The system audits projects from approval onward:
+
+- `approved` → `active` → `paused` → `completed`
+
+The proposal package is **not** an audited state. It is the **baseline**: the source of expected budget, hours, resources, rates, and timeline that approved projects are measured against.
 
 ### Target User
 
-The first version is designed for individual project review. Once the workflow is stable, it can be shared with other engineering project managers for broader review and feedback.
+The first version is designed for individual project review by the project owner. The system is intentionally built so it can expand later: the audit engine is a reusable package, so the same logic can serve other engineering project managers, a shared team workflow, or a broader deployment without being rewritten.
 
 ### Core Problem
 
 Engineering project managers often need to understand whether a project performed as expected. That review usually requires checking estimates, hours, rates, resource usage, billing status, deadlines, change orders, and final outcomes across multiple files.
 
-epm-insights brings that information into one workflow so I can review each project or program with the same structure and the same performance logic.
+epm-insights brings that information into one workflow so each project or program can be reviewed with the same structure and the same performance logic — and so the review process itself can withstand external audit.
 
 ### Core Inputs
 
-1. Proposal package
+1. Proposal package (baseline — not audited itself)
    - Expected budget
    - Estimated hours
    - Planned resources
@@ -31,7 +41,7 @@ epm-insights brings that information into one workflow so I can review each proj
    - Scope assumptions
    - Optional baseline score
 
-2. Actual project data
+2. Actual project data (approved projects onward)
    - Actual hours
    - Actual billing or balance
    - Actual resource usage
@@ -61,67 +71,85 @@ epm-insights brings that information into one workflow so I can review each proj
    - Lessons learned
    - Findings and recommendations
 
-## System Workflow
+3. Run record (traceability)
+   - Which input files, criteria version, and code produced each report
+   - Allows any result to be reproduced and verified
 
-The workflow shows how project information moves through the audit process.
+All reports are generated locally into an `outputs/` folder on the user's own machine as shareable files (HTML/CSV). Nothing is uploaded anywhere.
+
+## System Workflow
 
 ```mermaid
 flowchart TD
-    A[Proposal Package] --> B[Expected Baseline]
-    C[Actual Project Data] --> D[Actual Performance State]
-    E[Optional Portfolio Data] --> F[Comparison Context]
-    B --> G[Data Validation and Normalization]
-    D --> G
-    F --> G
-    G --> H[Metric Calculations]
+    A[Proposal Package - Baseline] --> G
+    C[Actual Project Data - Approved Onward] --> G
+    E[Optional Portfolio Data] --> G
+    R[Audit Criteria Register - versioned config] --> H
+    G[Data Validation and Normalization] --> H[Metric Calculations]
     H --> I[Audit Engine Review]
     I --> J[Project Health Positioning]
     J --> K[Intelligent Insights Review]
+    I --> T[Run Record - Traceability Log]
     K --> L[Project Health Report]
     K --> M[Project Audit Report]
+    L --> O[outputs/ folder - local files]
+    M --> O
+    O --> P[Dashboard View and Report Download]
 ```
 
-## System Architecture
-
-The architecture shows the main system layers that support the workflow.
+## Project State Model
 
 ```mermaid
-flowchart TB
-    A[Input Layer] --> B[Data Processing Layer]
-    B --> C[Data Analytics Layer]
-    C --> D[Audit Engine]
-    D --> E[Intelligent Insights Layer]
-    E --> F[Reporting Layer]
-    F --> G[Dashboard and Report Outputs]
-
-    A1[Proposal Package] --> A
-    A2[Actual Project Data] --> A
-    A3[Portfolio Comparison Data] --> A
-
-    C1[SQL Checks] --> C
-    C2[Python Calculations] --> C
-
-    D1[Threshold Rules] --> D
-    D2[Health Scoring] --> D
-    D3[Audit Findings] --> D
-
-    E1[Pattern Review] --> E
-    E2[Risk Classification] --> E
-    E3[Report Assistance] --> E
+stateDiagram-v2
+    note left of Approved
+        Proposal package exists
+        before approval. It is the
+        baseline for comparison,
+        not an audited state.
+    end note
+    [*] --> Approved
+    Approved --> Active
+    Active --> Paused
+    Paused --> Active
+    Active --> Completed
+    Completed --> AuditReady
+    Paused --> AuditReady
+    AuditReady --> ReportGenerated
+    ReportGenerated --> [*]
 ```
+
+## Quality Framework (Standardization)
+
+The audit process is governed by a documented Quality Framework so the system stays consistent as it grows and so external auditors can verify it. Its elements:
+
+| Element | What it is |
+|---|---|
+| Audit Charter | Defines what the audit system covers, its boundaries, and who relies on it |
+| Roles and Responsibilities | Who owns criteria, approves reports, and reviews results |
+| Audit Criteria Register | Versioned, machine-readable thresholds and formulas the engine reads |
+| Document and Record Control | Register of controlled documents; retained run records for every audit run |
+| Defined Process Steps | Each pipeline stage documented with inputs, outputs, and pass criteria |
+| Calibration and Review Cycle | Scheduled review of thresholds and classifications against real outcomes |
+| Findings and Corrective Action Log | Structured findings with follow-up status, not just report text |
+| External Audit Alignment Map | Maps each element to the quality-management concepts external auditors assess |
+
+## Related Documents
+
+- `docs/prd.md` — product requirements (what the system must do)
+- `docs/system-architecture.md` — how the system is built
+- `docs/project-plan.md` — build phases and definition of done
+- `docs/audit-engine-foundation.md` — audit logic foundations
+- `docs/completed-project-health.md` — completed-projects MVP (first implemented slice)
 
 ### Future Prospects
 
-Future versions may include:
+Committed in the plan (see `docs/project-plan.md`), not optional ideas:
 
-- Local dashboard for daily and weekly project review
-- PDF or Word report export
-- Project similarity analysis
-- Estimate accuracy tracking
-- Resource workload analysis
-- Risk classification using machine learning
-- Anomaly detection for unusual hours, billing, or schedule patterns
-- Optional local-only report assistance
+- Local dashboard for project review with report download
+- Generated report files (HTML, printable to PDF)
+- Project similarity analysis and estimate accuracy tracking
+- Risk classification and anomaly detection
+- Retrieval-assisted report drafting (RAG) over past project history — local-first, cloud only as explicit opt-in
 
 ## Project Ownership
 
