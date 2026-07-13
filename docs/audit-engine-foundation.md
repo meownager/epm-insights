@@ -6,6 +6,10 @@ The project should not begin with the interface. It should begin with the audit 
 
 The purpose of the audit engine is to define how project performance will be judged. Once that logic is reliable, the dashboard and reports can be built around it.
 
+## Audit Scope
+
+The engine audits projects from approval onward: `approved` → `active` → `paused` → `completed`. Proposal data is the comparison baseline, not an audited state. All thresholds come from the versioned Audit Criteria Register (`config/audit_criteria.yaml`), and every run writes a run record for traceability.
+
 ## Audit Perspective
 
 The audit should answer four practical questions:
@@ -119,8 +123,12 @@ flowchart TD
 
 ```mermaid
 stateDiagram-v2
-    [*] --> PreApproved
-    PreApproved --> Approved
+    note left of Approved
+        Proposal data before approval
+        is the comparison baseline,
+        not an audited state.
+    end note
+    [*] --> Approved
     Approved --> Active
     Active --> Paused
     Paused --> Active
@@ -128,6 +136,7 @@ stateDiagram-v2
     Completed --> AuditReady
     Paused --> AuditReady
     AuditReady --> ReportGenerated
+    ReportGenerated --> [*]
 ```
 
 ## First Implementation Steps
