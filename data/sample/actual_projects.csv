@@ -1,13 +1,13 @@
 project_id,actual_budget,actual_hours,actual_start_date,actual_end_date,status,actual_resource_count,closeout_notes
-EP-25001,259000,1240,2024-10-07,2025-03-18,completed,4,Minor punch-list rework in final week; client signed off on first walkthrough.
-EP-25002,462000,2010,2024-09-09,2025-04-25,completed,6,Finished under budget; reused tested code blocks from prior line upgrade.
-EP-25003,131500,698,2025-01-13,2025-04-17,completed,3,Extra ductwork sensors requested mid-project; absorbed within contingency.
-EP-25004,298000,1552,2024-11-04,2025-05-20,closed,5,Closed early; burner vendor delivered ahead of schedule.
-EP-25005,99800,455,2025-02-03,2025-04-20,completed,2,Smooth commissioning; telemetry panel shipped pre-wired.
-EP-25006,255000,960,2025-01-06,2025-05-21,completed,5,Camera lighting redesign after failed first acceptance test drove budget overrun.
-EP-25007,400000,2090,2024-10-28,2025-06-16,completed,7,Structural steel rework added unplanned controls hours; schedule held.
-EP-25008,162000,745,2025-03-03,2025-07-05,completed,3,Plant shutdown window slipped two weeks; team waited on chiller isolation.
-EP-25009,340000,1560,2025-01-20,2025-07-16,completed,6,Robot reach issue found at FAT; regripper design added cost and hours.
-EP-25010,265000,1230,2025-02-17,2025-07-10,closed,5,Legacy drive cabinets not as documented; extensive rewire and retest.
-EP-25011,405000,1980,2024-12-02,2025-08-25,completed,7,AGV vendor firmware defects delayed site acceptance by six weeks.
-EP-25012,122000,560,2025-04-07,2025-06-25,completed,3,Scope grew from four to seven compressors after kickoff; no change order raised.
+24201-F,259000,1240,2024-10-07,2025-03-18,completed,4,Minor punch-list rework in final week; client signed off on first walkthrough.
+24202-T,462000,2010,2024-09-09,2025-04-25,completed,6,Finished under budget; reused tested code blocks from prior line upgrade.
+24203-T,131500,698,2025-01-13,2025-04-17,completed,3,Extra ductwork sensors requested mid-project; absorbed within contingency.
+24204-F,298000,1552,2024-11-04,2025-05-20,closed,5,Closed early; burner vendor delivered ahead of schedule.
+24205-T,99800,455,2025-02-03,2025-04-20,completed,2,Smooth commissioning; telemetry panel shipped pre-wired.
+24206-F,255000,960,2025-01-06,2025-05-21,completed,5,Camera lighting redesign after failed first acceptance test drove budget overrun.
+24207-F,400000,2090,2024-10-28,2025-06-16,completed,7,Structural steel rework added unplanned controls hours; schedule held.
+24208-T,162000,745,2025-03-03,2025-07-05,completed,3,Plant shutdown window slipped two weeks; team waited on chiller isolation.
+24209-F,340000,1560,2025-01-20,2025-07-16,completed,6,Robot reach issue found at FAT; regripper design added cost and hours.
+24210-T,265000,1230,2025-02-17,2025-07-10,closed,5,Legacy drive cabinets not as documented; extensive rewire and retest.
+24211-F,405000,1980,2024-12-02,2025-08-25,completed,7,AGV vendor firmware defects delayed site acceptance by six weeks.
+24212-T,122000,560,2025-04-07,2025-06-25,completed,3,Scope grew from four to seven compressors after kickoff; no change order raised.
