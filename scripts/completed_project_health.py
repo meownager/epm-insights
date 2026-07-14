@@ -3,6 +3,7 @@
 
 Loads proposed baseline and actual outcome CSV files, computes deviation
 metrics, classifies advisory health, and writes CSV outputs.
+Thresholds are read from config/audit_criteria.yaml (the Audit Criteria Register).
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ import argparse
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
 
 REQUIRED_PROPOSAL_COLUMNS = {
@@ -31,15 +33,24 @@ REQUIRED_ACTUAL_COLUMNS = {
 }
 
 
+DEFAULT_CRITERIA_PATH = Path(__file__).parent.parent / "config" / "audit_criteria.yaml"
+
+
+def load_criteria(criteria_path: Path) -> dict:
+    with open(criteria_path, "r") as f:
+        return yaml.safe_load(f)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Completed project health deviation analysis")
     parser.add_argument("--proposal", required=True, help="Path to proposal_projects.csv")
     parser.add_argument("--actual", required=True, help="Path to actual_projects.csv")
     parser.add_argument("--output-dir", default="outputs", help="Directory for report outputs")
-    parser.add_argument("--green-pct", type=float, default=0.15, help="Green variance threshold")
-    parser.add_argument("--yellow-pct", type=float, default=0.30, help="Yellow variance threshold")
-    parser.add_argument("--green-days", type=int, default=7, help="Green schedule slip threshold")
-    parser.add_argument("--yellow-days", type=int, default=21, help="Yellow schedule slip threshold")
+    parser.add_argument(
+        "--criteria",
+        default=str(DEFAULT_CRITERIA_PATH),
+        help="Path to audit_criteria.yaml (Audit Criteria Register)",
+    )
     return parser.parse_args()
 
 
@@ -96,13 +107,17 @@ def compute_metrics(
     yellow_pct: float,
     green_days: int,
     yellow_days: int,
+    eligible_statuses: set[str] | None = None,
 ) -> pd.DataFrame:
+    if eligible_statuses is None:
+        eligible_statuses = {"completed", "closed"}
+
     validate_columns(proposal, REQUIRED_PROPOSAL_COLUMNS, "proposal file")
     validate_columns(actual, REQUIRED_ACTUAL_COLUMNS, "actual file")
 
     merged = proposal.merge(actual, on="project_id", how="inner", suffixes=("_proposal", "_actual"))
     status = merged["status"].fillna("").str.lower().str.strip()
-    merged = merged[status.isin(["completed", "closed"])].copy()
+    merged = merged[status.isin(eligible_statuses)].copy()
 
     merged = to_datetime(
         merged,
@@ -159,16 +174,28 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    criteria = load_criteria(Path(args.criteria))
+    cp = criteria["completed_projects"]
+    green_pct = cp["budget"]["green_max"]
+    yellow_pct = cp["budget"]["yellow_max"]
+    green_days = cp["schedule"]["green_max_days"]
+    yellow_days = cp["schedule"]["yellow_max_days"]
+    eligible_statuses = set(cp.get("eligible_statuses", ["completed", "closed"]))
+
+    criteria_version = criteria.get("version", "unknown")
+    print(f"Audit Criteria Register v{criteria_version} loaded from: {args.criteria}")
+
     proposal = pd.read_csv(args.proposal)
     actual = pd.read_csv(args.actual)
 
     metrics = compute_metrics(
         proposal=proposal,
         actual=actual,
-        green_pct=args.green_pct,
-        yellow_pct=args.yellow_pct,
-        green_days=args.green_days,
-        yellow_days=args.yellow_days,
+        green_pct=green_pct,
+        yellow_pct=yellow_pct,
+        green_days=green_days,
+        yellow_days=yellow_days,
+        eligible_statuses=eligible_statuses,
     )
 
     detail_cols = [

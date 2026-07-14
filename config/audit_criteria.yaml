@@ -1,0 +1,28 @@
+# Audit Criteria Register
+# This is the only place thresholds live. Every change must increment version
+# and record a reason. The audit engine reads this file at runtime — thresholds
+# are never hardcoded in source.
+
+version: "1.0.0"
+effective_date: "2026-07-13"
+change_reason: "Initial release — establishes baseline thresholds for completed-project audit."
+
+completed_projects:
+  # Budget and hours deviation thresholds (as decimal fractions, e.g. 0.15 = 15%)
+  budget:
+    green_max: 0.15    # ≤15% over/under proposed budget → Green
+    yellow_max: 0.30   # >15% and ≤30% → Yellow; >30% → Red
+
+  hours:
+    green_max: 0.15    # ≤15% over/under proposed hours → Green
+    yellow_max: 0.30   # >15% and ≤30% → Yellow; >30% → Red
+
+  # Schedule deviation thresholds (calendar days, end-date slip)
+  schedule:
+    green_max_days: 7    # ≤7 days late → Green
+    yellow_max_days: 21  # >7 and ≤21 days late → Yellow; >21 days → Red
+
+  # Eligible statuses for the completed-project audit slice
+  eligible_statuses:
+    - completed
+    - closed
