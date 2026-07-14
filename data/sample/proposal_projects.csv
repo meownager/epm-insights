@@ -1,0 +1,13 @@
+project_id,project_name,proposed_budget,proposed_hours,proposed_start_date,proposed_end_date,proposed_resource_count,project_manager,client,project_type,billing_type
+24201-F,Batch Line HMI Replacement,250000,1200,2024-10-07,2025-03-14,4,R. Patel,Eli Lilly,Automation,fixed_fee
+24202-T,Packaging Line PLC Upgrade,480000,2100,2024-09-02,2025-04-25,6,S. Reyes,Magna Drivetrain,Automation,t_and_e
+24203-T,Dust Collection Controls Retrofit,120000,640,2025-01-13,2025-04-11,3,M. Chen,Cummins,Service,t_and_e
+24204-F,Boiler Controls Modernization,310000,1500,2024-11-04,2025-05-30,5,T. Nguyen,ADM Processing,Service,fixed_fee
+24205-T,Water Treatment Telemetry Upgrade,95000,420,2025-02-03,2025-04-18,2,D. Okafor,Subaru Indiana,Service,t_and_e
+24206-F,Vision Inspection Cell,210000,900,2025-01-06,2025-05-16,4,M. Chen,Toyota Boshoku,Automation,fixed_fee
+24207-F,Warehouse Conveyor Expansion,385000,1700,2024-10-21,2025-06-13,6,S. Reyes,Subaru Indiana,Automation,fixed_fee
+24208-T,Chiller Plant SCADA Integration,150000,700,2025-03-03,2025-06-20,3,R. Patel,ADM Processing,Service,t_and_e
+24209-F,Palletizer Robot Install,275000,1250,2025-01-20,2025-06-27,5,T. Nguyen,Cummins,Automation,fixed_fee
+24210-T,Line 2 Servo Conversion,190000,850,2025-02-17,2025-06-06,4,D. Okafor,Magna Drivetrain,Automation,t_and_e
+24211-F,AGV Fleet Integration,420000,1900,2024-12-02,2025-07-11,7,S. Reyes,Toyota Boshoku,Automation,fixed_fee
+24212-T,Compressor Room Automation,88000,400,2025-04-07,2025-06-13,2,M. Chen,Eli Lilly,Service,t_and_e
