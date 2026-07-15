@@ -9,9 +9,9 @@ epm-insights is a project audit and analysis system for Engineering Program/Proj
 - **Run records** — every audit run produces a JSON record with a run ID, timestamp, criteria version, and SHA-256 fingerprints of the input files, so any result can be reproduced and traced
 - **HTML reports** — downloadable, self-contained audit reports you can open, print, or share
 - **Interactive dashboard** — charts, filters, and a color-coded project table in your browser
-- **Insights** — automated pattern findings (margin exposure, scope growth without change orders, PM and client concentrations) and a closeout-notes similarity search
+- **Insights** — automated pattern findings (margin exposure, scope growth without change orders, EPM and client concentrations) and a closeout-notes similarity search
 
-## Quick Start (for Project Managers)
+## Quick Start (for Engineering Project Managers)
 
 You need Python 3.11 or newer installed ([python.org/downloads](https://www.python.org/downloads/) — check "Add Python to PATH" during install).
 

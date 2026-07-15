@@ -1,4 +1,31 @@
-﻿outputs/
-data/real/
+﻿@"
+# Python / tooling
 __pycache__/
+*.py[cod]
 .pytest_cache/
+.venv/
+venv/
+env/
+.env
+.streamlit/secrets.toml
+
+# Generated audit outputs (reports, run records)
+outputs/
+
+# DATA GUARDRAILS
+# REAL COMPANY DATA MUST NEVER BE COMMITTED TO THIS REPOSITORY.
+# Real data stays on each user's local machine only.
+
+# 1. The designated real-data folder is fully blocked:
+data/real/
+
+# 2. Defense in depth: ALL data-bearing file types are blocked
+#    everywhere in the repository, no matter where saved:
+*.csv
+*.xls
+*.xlsx
+*.xlsm
+
+# 3. ...EXCEPT the synthetic sample data, explicitly allowed:
+!data/sample/*.csv
+"@ | Out-File -Encoding ascii .gitignore
