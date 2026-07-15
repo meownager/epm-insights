@@ -10,6 +10,10 @@ Health classification uses billing-type-specific thresholds (fixed_fee vs t_and_
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -35,6 +39,52 @@ REQUIRED_ACTUAL_COLUMNS = {
 }
 
 DEFAULT_CRITERIA_PATH = Path(__file__).parent.parent / "config" / "audit_criteria.yaml"
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def write_run_record(
+    output_dir: Path,
+    criteria: dict,
+    criteria_path: Path,
+    proposal_path: Path,
+    actual_path: Path,
+    metrics: pd.DataFrame,
+) -> Path:
+    run_id = str(uuid.uuid4())
+    ts = datetime.now(timezone.utc)
+    ts_str = ts.strftime("%Y%m%dT%H%M%SZ")
+
+    health_summary = (
+        metrics["health_status"].value_counts().to_dict()
+        if "health_status" in metrics.columns
+        else {}
+    )
+
+    record = {
+        "run_id": run_id,
+        "timestamp": ts.isoformat(),
+        "criteria_version": criteria.get("version", "unknown"),
+        "criteria_file": str(criteria_path.resolve()),
+        "proposal_file": str(proposal_path.resolve()),
+        "actual_file": str(actual_path.resolve()),
+        "proposal_fingerprint": sha256_file(proposal_path),
+        "actual_fingerprint": sha256_file(actual_path),
+        "project_count": len(metrics),
+        "health_summary": health_summary,
+    }
+
+    runs_dir = output_dir / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    out = runs_dir / f"run_{run_id[:8]}_{ts_str}.json"
+    out.write_text(json.dumps(record, indent=2))
+    return out
 
 
 def load_criteria(criteria_path: Path) -> dict:
@@ -261,9 +311,19 @@ def main() -> None:
     summary_out = output_dir / "completed_project_health_summary.csv"
     summary.to_csv(summary_out, index=False)
 
+    run_record_out = write_run_record(
+        output_dir=output_dir,
+        criteria=criteria,
+        criteria_path=Path(args.criteria),
+        proposal_path=Path(args.proposal),
+        actual_path=Path(args.actual),
+        metrics=metrics,
+    )
+
     print("Completed Project Health Analysis complete.")
-    print(f"Detail report: {detail_out}")
+    print(f"Detail report:  {detail_out}")
     print(f"Summary report: {summary_out}")
+    print(f"Run record:     {run_record_out}")
 
 
 if __name__ == "__main__":
