@@ -238,6 +238,9 @@ def build_report(detail: pd.DataFrame, meta: dict) -> str:
 </html>"""
 
 
+### insights based on the parsed data only, no RAG used, as of July 16, 2026
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate HTML audit report")
     parser.add_argument("--detail", required=True, help="Path to completed_project_health_detail.csv")
