@@ -18,10 +18,13 @@ import plotly.graph_objects as go
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent / "scripts"))
-from completed_project_health import compute_metrics, load_criteria, write_run_record
+from burn_timeline import compute_burn_series, first_crossing_dates
+from completed_project_health import compute_metrics, get_billing_thresholds, load_criteria, write_run_record
 from convert_ies import convert as convert_ies_exports
 from generate_html_report import build_report
 from insights import analyse_patterns, build_notes_index, search_notes
+from portfolio_store import delete_projects as store_delete
+from portfolio_store import load_store, upsert as store_upsert
 from quality_scoring import load_rubric, score_portfolio
 
 # ── constants ───────────────────────────────────────────────────────────────
@@ -29,6 +32,7 @@ from quality_scoring import load_rubric, score_portfolio
 DEFAULT_PROPOSAL = str(Path(__file__).parent / "data/sample/proposal_projects.csv")
 DEFAULT_ACTUAL   = str(Path(__file__).parent / "data/sample/actual_projects.csv")
 DEFAULT_CRITERIA = str(Path(__file__).parent / "config/audit_criteria.yaml")
+PORTFOLIO_STORE_DIR = Path(__file__).parent / "data/real/portfolio_store"
 
 HEALTH_ORDER  = ["Red", "Yellow", "Green"]
 HEALTH_COLORS = {"Red": "#EF4444", "Yellow": "#F59E0B", "Green": "#22C55E"}
@@ -56,7 +60,38 @@ def _run_ies_conversion(estimate_transaction_files, timesheet_file, work_dir: Pa
         "proposal": pd.read_csv(out_dir / "proposal_projects.csv"),
         "actual": pd.read_csv(out_dir / "actual_projects.csv"),
         "financials": pd.read_csv(out_dir / "project_financials.csv"),
+        "ledger": pd.read_csv(out_dir / "project_ledger.csv"),
     }
+
+def _load_full_portfolio() -> None:
+    """Pull everything currently in the local portfolio store into session
+    state, so previously audited projects stay visible without re-uploading.
+    """
+    store = load_store(PORTFOLIO_STORE_DIR)
+    if store["metrics"].empty:
+        return
+    criteria = load_criteria(Path(DEFAULT_CRITERIA))
+    st.session_state.metrics = store["metrics"]
+    st.session_state.criteria = criteria
+    st.session_state.ies_financials = store["financials"] if not store["financials"].empty else None
+    st.session_state.ies_ledger = store["ledger"] if not store["ledger"].empty else None
+    st.session_state.no_schedule_baseline = True
+    st.session_state.meta = {
+        "run_id": "portfolio", "timestamp": "", "criteria_version": criteria.get("version", "—"),
+        "proposal_fingerprint": "—", "actual_fingerprint": "—",
+    }
+    st.session_state.scorecard = None
+    if st.session_state.ies_financials is not None:
+        try:
+            rubric = load_rubric()
+            st.session_state.scorecard = score_portfolio(
+                store["metrics"], criteria, rubric, financials=st.session_state.ies_financials, scores=None,
+            )
+        except Exception:
+            pass
+    pms = sorted(store["metrics"]["project_manager"].dropna().unique().tolist())
+    st.session_state["pm_options"] = pms
+
 
 # ── page config ─────────────────────────────────────────────────────────────
 
@@ -124,6 +159,19 @@ with st.sidebar:
         disabled=not uploaded_ies_files,
     )
 
+    _store_preview = load_store(PORTFOLIO_STORE_DIR)
+    if not _store_preview["metrics"].empty:
+        with st.expander(f"Manage saved portfolio ({len(_store_preview['metrics'])} projects)"):
+            st.caption("Projects stay here across sessions until removed.")
+            to_remove = st.multiselect(
+                "Remove project(s)",
+                sorted(_store_preview["metrics"]["project_id"].unique().tolist()),
+            )
+            if st.button("🗑️  Remove selected", disabled=not to_remove, use_container_width=True):
+                store_delete(PORTFOLIO_STORE_DIR, to_remove)
+                _load_full_portfolio()
+                st.rerun()
+
     with st.expander("Advanced: use already-converted CSVs instead"):
         proposal_path = st.text_input("Proposal CSV", value=DEFAULT_PROPOSAL)
         actual_path   = st.text_input("Actual CSV",   value=DEFAULT_ACTUAL)
@@ -159,7 +207,9 @@ if "metrics" not in st.session_state:
     st.session_state.criteria  = {}
     st.session_state.scorecard = None
     st.session_state.ies_financials = None
+    st.session_state.ies_ledger = None
     st.session_state.no_schedule_baseline = False
+    _load_full_portfolio()
 
 
 # ── convert uploaded IES files + run audit ──────────────────────────────────
@@ -193,6 +243,7 @@ if convert_clicked:
                     st.error("No projects converted successfully — check the uploaded files.")
                 else:
                     metrics = compute_metrics(proposal, actual, criteria, eligible)
+                    ledger = converted["ledger"]
 
                     proposal_tmp = work_dir / "proposal_projects.csv"
                     actual_tmp = work_dir / "actual_projects.csv"
@@ -208,23 +259,14 @@ if convert_clicked:
                     )
                     meta = json.loads(run_out.read_text())
 
-                    st.session_state.metrics  = metrics
-                    st.session_state.meta     = meta
-                    st.session_state.criteria = criteria
-                    st.session_state.ies_financials = financials
-                    st.session_state.no_schedule_baseline = True
-
-                    st.session_state.scorecard = None
-                    try:
-                        rubric = load_rubric()
-                        st.session_state.scorecard = score_portfolio(
-                            metrics, criteria, rubric, financials=financials, scores=None,
-                        )
-                    except Exception as e:
-                        st.warning(f"Quality/financial scoring skipped: {e}")
-
-                    pms = sorted(metrics["project_manager"].dropna().unique().tolist())
-                    st.session_state["pm_options"] = pms
+                    # persist this batch into the local portfolio store, replacing
+                    # any prior entry for the same project_id, then reload the
+                    # FULL accumulated portfolio (not just this batch) so
+                    # previously audited projects stay visible.
+                    store_upsert(PORTFOLIO_STORE_DIR, metrics, financials, ledger)
+                    _load_full_portfolio()
+                    st.session_state.meta = meta
+                    st.success(f"{len(metrics)} project(s) added to your portfolio.")
                     st.rerun()
 
 
@@ -266,6 +308,7 @@ if run_clicked:
         st.session_state.meta     = meta
         st.session_state.criteria = criteria
         st.session_state.ies_financials = None
+        st.session_state.ies_ledger = None
         st.session_state.no_schedule_baseline = False
 
         # optional quality/financial scoring layer
@@ -408,7 +451,9 @@ st.markdown("<div style='margin-top:20px'></div>", unsafe_allow_html=True)
 
 # ── tabs ─────────────────────────────────────────────────────────────────────
 
-tab_overview, tab_table, tab_insights = st.tabs(["Overview", "Project Detail", "Insights"])
+tab_overview, tab_timeline, tab_table, tab_insights = st.tabs(
+    ["Overview", "Timeline", "Project Detail", "Insights"]
+)
 
 
 # ── overview tab ─────────────────────────────────────────────────────────────
@@ -478,6 +523,134 @@ with tab_overview:
         fig_bar.update_traces(marker_line_width=0)
         st.plotly_chart(fig_bar, use_container_width=True)
 
+
+# ── timeline tab ─────────────────────────────────────────────────────────────
+
+with tab_timeline:
+    ledger_all = st.session_state.get("ies_ledger")
+    if ledger_all is None or ledger_all.empty:
+        st.info(
+            "Timeline data isn't available for these projects. It's produced "
+            "automatically when you upload IES Estimate + Transactions files "
+            "through the sidebar upload panel — the 'Advanced: CSVs' path "
+            "doesn't carry dated transaction detail.",
+            icon="ℹ️",
+        )
+    else:
+        available_ids = sorted(set(all_df["project_id"]) & set(ledger_all["project_id"].unique()))
+        if not available_ids:
+            st.info("No timeline data for the currently loaded projects.", icon="ℹ️")
+        else:
+            selected_pid = st.selectbox("Project", available_ids)
+            proj_row = all_df[all_df["project_id"] == selected_pid].iloc[0]
+            proj_ledger = ledger_all[ledger_all["project_id"] == selected_pid]
+            billing_type = proj_row.get("billing_type", "fixed_fee")
+            thresholds = get_billing_thresholds(billing_type, criteria)
+
+            st.caption(
+                f"**{selected_pid}** · {str(billing_type).replace('_',' ').title()} · "
+                f"Proposed ${proj_row.get('proposed_budget', 0):,.0f} / "
+                f"{proj_row.get('proposed_hours', 0):,.0f} hrs"
+            )
+
+            if billing_type == "fixed_fee":
+                st.warning(
+                    "**Read this before the revenue chart:** fixed-fee projects are "
+                    "often billed in large upfront milestones (e.g. 50% on order). "
+                    "That makes the very start of the revenue line look 'ahead of "
+                    "pace' — that's normal milestone billing, not an overrun. The "
+                    "**hours burn chart below is the more reliable signal** for "
+                    "fixed-fee overruns, since labor is consumed steadily rather "
+                    "than billed in lump sums.",
+                    icon="⚠️",
+                )
+
+            def _burn_chart(metric_col: str, proposed_value, green_pct: float,
+                            yellow_pct: float, label: str, y_format: str):
+                series = compute_burn_series(proj_ledger, proposed_value, metric_col, green_pct, yellow_pct)
+                if series.empty or (series["zone"] == "Unavailable").all():
+                    st.info(f"No {label.lower()} timeline data for this project.", icon="ℹ️")
+                    return
+
+                zone_seq = series["zone"].tolist()
+                has_partial_coverage_gap = "Unavailable" in zone_seq and zone_seq[-1] != "Unavailable"
+                if has_partial_coverage_gap:
+                    st.warning(
+                        f"**{label} tracking for this project started after the project itself did.** "
+                        f"Points before tracking began are correctly excluded (shown as a gap), but "
+                        f"the pace line still counts calendar time from the project's true start — so "
+                        f"the period right after tracking begins can look artificially 'behind pace' "
+                        f"even for a well-run project. Read the shape of the catch-up, not the color, "
+                        f"for that stretch.",
+                        icon="⚠️",
+                    )
+
+                crossings = first_crossing_dates(series)
+                zone_colors = series["zone"].map(HEALTH_COLORS).fillna("#9CA3AF")
+
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=series["date"], y=series["expected_pace"],
+                    mode="lines", name="Expected pace (straight-line)",
+                    line=dict(color="#9CA3AF", dash="dash", width=1.5),
+                    hovertemplate="Pace: %{y:,.0f}<extra></extra>",
+                ))
+                fig.add_trace(go.Scatter(
+                    x=series["date"], y=series[metric_col],
+                    mode="lines+markers", name="Actual (cumulative)",
+                    line=dict(color="#2962FF", width=2),
+                    marker=dict(color=zone_colors, size=8, line=dict(width=1, color="#fff")),
+                    hovertext=series["zone"],
+                    hovertemplate="Actual: %{y:,.0f}<br>Zone: %{hovertext}<extra></extra>",
+                ))
+                for label_txt, date_val, color in [
+                    ("First Yellow", crossings["first_yellow"], "#F59E0B"),
+                    ("First Red", crossings["first_red"], "#EF4444"),
+                ]:
+                    if date_val is not None:
+                        fig.add_vline(
+                            x=date_val, line_dash="dot", line_color=color,
+                            annotation_text=f"{label_txt}: {date_val.date()}",
+                            annotation_position="top", annotation_font_color=color,
+                        )
+                fig.update_layout(
+                    height=340,
+                    margin=dict(t=30, b=10, l=0, r=0),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="#FAFBFC",
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
+                    yaxis=dict(tickformat=y_format, gridcolor="#E5E7EB"),
+                    xaxis=dict(gridcolor="#E5E7EB"),
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                if crossings["first_red"]:
+                    st.caption(f"🔴 First crossed into Red on **{crossings['first_red'].date()}**.")
+                elif crossings["first_yellow"]:
+                    st.caption(f"🟡 First crossed into Yellow on **{crossings['first_yellow'].date()}**, never reached Red.")
+                else:
+                    st.caption("🟢 Stayed within the Green band for its entire duration.")
+
+            st.markdown("**Budget Burn — Cumulative Revenue vs. Pace**")
+            _burn_chart(
+                "cumulative_revenue", proj_row.get("proposed_budget"),
+                thresholds["green_pct"], thresholds["yellow_pct"],
+                "Budget", "$,.0f",
+            )
+
+            st.markdown("**Hours Burn — Cumulative Hours vs. Pace**")
+            _burn_chart(
+                "cumulative_hours", proj_row.get("proposed_hours"),
+                thresholds["green_hours_pct"], thresholds["yellow_hours_pct"],
+                "Hours", ",.0f",
+            )
+
+            st.caption(
+                "Pace is a straight line from $0/0 hrs to the proposed total, spread "
+                "across this project's own actual start→end dates (no promised "
+                "delivery date exists in the source data — see the disclosure above). "
+                "Green/Yellow/Red bands use this project's billing-type thresholds "
+                "from the Audit Criteria Register."
+            )
 
 
 # ── project detail tab ───────────────────────────────────────────────────────

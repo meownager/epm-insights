@@ -12,6 +12,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 from convert_ies import (
+    build_project_ledger,
     convert,
     find_pairs,
     parse_estimate,
@@ -173,11 +174,22 @@ def test_parse_timesheet_aggregates_by_project(tmp_path):
         {"username": "a@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 6, "local_date": "2026-01-21"},
         {"username": "b@co.com", "jobcode_2": "90002-T - Support Block", "hours": 4, "local_date": "2026-04-10"},
     ])
-    agg = parse_timesheet(tmp_path / "timesheet.csv")
+    agg, daily = parse_timesheet(tmp_path / "timesheet.csv")
     row = agg[agg["project_code"] == "90001-F"].iloc[0]
     assert row["logged_hours"] == 14
     assert row["first_logged"] == "2026-01-20"
     assert row["last_logged"] == "2026-01-21"
+
+
+def test_parse_timesheet_daily_rows(tmp_path):
+    write_timesheet(tmp_path / "timesheet.csv", [
+        {"username": "a@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 8, "local_date": "2026-01-20"},
+        {"username": "b@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 3, "local_date": "2026-01-20"},
+        {"username": "a@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 6, "local_date": "2026-01-21"},
+    ])
+    _, daily = parse_timesheet(tmp_path / "timesheet.csv")
+    day1 = daily[(daily["project_code"] == "90001-F") & (daily["date"] == pd.Timestamp("2026-01-20"))]
+    assert day1["hours"].iloc[0] == 11  # two people, same day, summed
 
 
 # ── find_pairs / convert end-to-end ─────────────────────────────────────────
@@ -272,6 +284,77 @@ def test_convert_incomplete_estimate_marks_active(t_and_e_project, tmp_path_fact
     act = pd.read_csv(out / "actual_projects.csv")
     # remaining 15000 of 30000 → still active, excluded from completed audit
     assert act["status"].iloc[0] == "active"
+
+
+# ── build_project_ledger ─────────────────────────────────────────────────────
+
+def test_ledger_cumulative_revenue():
+    revenue_events = pd.DataFrame({
+        "date": pd.to_datetime(["2026-01-01", "2026-02-01", "2026-03-01"]),
+        "amount": [1000, 2000, 500],
+    })
+    ledger = build_project_ledger(revenue_events, None, "90001-F")
+    assert list(ledger["cumulative_revenue"]) == [1000, 3000, 3500]
+
+
+def test_ledger_merges_revenue_and_hours_on_date():
+    revenue_events = pd.DataFrame({
+        "date": pd.to_datetime(["2026-01-01", "2026-02-01"]),
+        "amount": [1000, 1000],
+    })
+    hours_daily = pd.DataFrame({
+        "date": pd.to_datetime(["2026-01-15"]),
+        "hours": [20],
+    })
+    ledger = build_project_ledger(revenue_events, hours_daily, "90001-F")
+    # revenue on 01-15 should forward-fill from the 01-01 invoice (1000)
+    row = ledger[ledger["date"] == pd.Timestamp("2026-01-15")].iloc[0]
+    assert row["cumulative_revenue"] == 1000
+    assert row["cumulative_hours"] == 20
+
+
+def test_ledger_hours_before_first_entry_is_nan_not_zero():
+    """Regression: a project running Aug'24-Apr'26 whose timesheet coverage
+    only starts Jul'25 must show NaN (no data) for the earlier stretch, not
+    a false 0 — otherwise a real project with no hours logged yet reads as
+    a massive fake underrun once paced against the full proposed hours."""
+    revenue_events = pd.DataFrame({
+        "date": pd.to_datetime(["2024-08-01", "2025-08-01", "2026-04-01"]),
+        "amount": [50000, 50000, 50000],
+    })
+    hours_daily = pd.DataFrame({
+        "date": pd.to_datetime(["2025-07-15", "2025-08-01"]),
+        "hours": [50, 50],
+    })
+    ledger = build_project_ledger(revenue_events, hours_daily, "90001-F")
+    before_tracking = ledger[ledger["date"] == pd.Timestamp("2024-08-01")]
+    after_tracking = ledger[ledger["date"] == pd.Timestamp("2026-04-01")]
+    assert pd.isna(before_tracking["cumulative_hours"].iloc[0])
+    assert after_tracking["cumulative_hours"].iloc[0] == 100  # forward-filled from the last real entry
+
+
+def test_ledger_no_hours_data_defaults_to_zero():
+    revenue_events = pd.DataFrame({
+        "date": pd.to_datetime(["2026-01-01"]),
+        "amount": [500],
+    })
+    ledger = build_project_ledger(revenue_events, None, "90001-F")
+    assert (ledger["cumulative_hours"] == 0).all()
+
+
+def test_ledger_empty_revenue_returns_empty():
+    ledger = build_project_ledger(pd.DataFrame(columns=["date", "amount"]), None, "90001-F")
+    assert ledger.empty
+
+
+def test_convert_writes_ledger_file(fixed_fee_project, tmp_path_factory):
+    out = tmp_path_factory.mktemp("out")
+    convert(fixed_fee_project, out)
+    ledger = pd.read_csv(out / "project_ledger.csv")
+    assert set(ledger.columns) == {"project_id", "date", "cumulative_revenue", "cumulative_hours"}
+    proj_rows = ledger[ledger["project_id"] == "90001-F"]
+    assert not proj_rows.empty
+    assert proj_rows["cumulative_revenue"].max() == 28000  # matches final invoiced total
 
 
 def test_convert_skips_missing_pair(tmp_path, tmp_path_factory):

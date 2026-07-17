@@ -216,7 +216,17 @@ def parse_transactions(path: Path) -> dict:
     po = df[df["type"] == "Purchase Order"]
     est_rows = df[df["type"] == "Estimate"]
 
+    # dated revenue events, for the budget-burn timeline chart — invoices and
+    # credit memos only (what the client was actually billed, over time)
+    revenue_events = (
+        pd.concat([inv[["date", "amount"]], cm[["date", "amount"]]])
+        .dropna(subset=["date"])
+        .sort_values("date")
+        .reset_index(drop=True)
+    )
+
     return {
+        "revenue_events": revenue_events,
         "project_code": project_code,
         "estimate_date": est_rows["date"].min() if not est_rows.empty else pd.NaT,
         "revenue_invoiced": float(inv["amount"].sum() + cm["amount"].sum()),
@@ -239,21 +249,37 @@ def parse_transactions(path: Path) -> dict:
 
 # ── timesheet parsing ────────────────────────────────────────────────────────
 
-def parse_timesheet(path: Path) -> pd.DataFrame:
-    """Return hours + actual date coverage per project leg from the timesheet export."""
+def parse_timesheet(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return (per-project aggregate, per-project-per-day rows) from the timesheet export.
+
+    The aggregate powers actual-hours and actual-date-range lookups. The daily
+    rows power the hours-burn timeline chart (when a project first crossed
+    into elevated-hours territory, not just the final total).
+    """
     ts = pd.read_csv(path)
     if "jobcode_2" not in ts.columns or "hours" not in ts.columns:
         raise ValueError(f"{path.name}: expected timesheet columns (jobcode_2, hours) not found")
     codes = ts["jobcode_2"].astype(str).str.extract(PROJECT_CODE_RE)
     ts["project_code"] = codes[0] + "-" + codes[1]
-    proj = ts.dropna(subset=["project_code"])
+    proj = ts.dropna(subset=["project_code"]).copy()
+
     agg = proj.groupby("project_code").agg(
         logged_hours=("hours", "sum"),
         people=("username", "nunique"),
         first_logged=("local_date", "min"),
         last_logged=("local_date", "max"),
     ).reset_index()
-    return agg
+
+    daily = (
+        proj.groupby(["project_code", "local_date"])["hours"]
+        .sum()
+        .reset_index()
+        .rename(columns={"local_date": "date"})
+    )
+    daily["date"] = pd.to_datetime(daily["date"], errors="coerce")
+    daily = daily.sort_values(["project_code", "date"])
+
+    return agg, daily
 
 
 # ── conversion ───────────────────────────────────────────────────────────────
@@ -272,17 +298,67 @@ def find_pairs(input_dir: Path) -> dict[str, dict[str, Path]]:
     return pairs
 
 
+def build_project_ledger(
+    revenue_events: pd.DataFrame,
+    hours_daily: pd.DataFrame | None,
+    project_code: str,
+) -> pd.DataFrame:
+    """Merge dated revenue events and dated hours into one cumulative timeline
+    for a single project — the data the dashboard's burn-timeline chart reads.
+    Thresholds are deliberately NOT baked in here; the dashboard classifies
+    Green/Yellow/Red at chart time from the live criteria register, exactly
+    like every other part of this system.
+    """
+    rev = revenue_events.copy()
+    if rev.empty:
+        return pd.DataFrame(columns=["project_id", "date", "cumulative_revenue", "cumulative_hours"])
+    rev["date"] = pd.to_datetime(rev["date"], errors="coerce")
+    rev = rev.dropna(subset=["date"]).sort_values("date")
+    if rev.empty:
+        return pd.DataFrame(columns=["project_id", "date", "cumulative_revenue", "cumulative_hours"])
+    rev["cumulative_revenue"] = rev["amount"].cumsum()
+    rev_daily = rev.groupby("date")["cumulative_revenue"].last().reset_index()
+
+    if hours_daily is not None and not hours_daily.empty:
+        h = hours_daily.copy()
+        h["cumulative_hours"] = h["hours"].cumsum()
+        h_daily = h.groupby("date")["cumulative_hours"].last().reset_index()
+    else:
+        h_daily = pd.DataFrame(columns=["date", "cumulative_hours"])
+
+    merged = pd.merge(rev_daily, h_daily, on="date", how="outer").sort_values("date")
+    if merged.empty:
+        return merged.assign(project_id=project_code)
+    merged["cumulative_revenue"] = merged["cumulative_revenue"].ffill().fillna(0.0)
+
+    if hours_daily is not None and not hours_daily.empty:
+        # Hours tracking exists for this project but may start well after the
+        # project itself did (the timesheet system has a fixed start date —
+        # see the module docstring). Dates before the first real hours entry
+        # must stay NaN ("no data yet"), not be forced to 0 ("confirmed zero
+        # hours") — the latter reads as a huge false underrun/overrun once
+        # paced against the full proposed total. ffill() alone does this
+        # correctly: it fills gaps AFTER the first real value only.
+        merged["cumulative_hours"] = merged["cumulative_hours"].ffill()
+    else:
+        # No hours tracking at all for this project — genuinely 0 throughout.
+        merged["cumulative_hours"] = 0.0
+
+    merged["project_id"] = project_code
+    return merged[["project_id", "date", "cumulative_revenue", "cumulative_hours"]]
+
+
 def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = None) -> pd.DataFrame:
     output_dir.mkdir(parents=True, exist_ok=True)
     pairs = find_pairs(input_dir)
     if not pairs:
         raise SystemExit(f"No <num>_Estimate / <num>_Transactions files found in {input_dir}")
 
-    ts_agg = None
+    ts_agg = ts_daily = None
     if timesheet_path and timesheet_path.exists():
-        ts_agg = parse_timesheet(timesheet_path)
+        ts_agg, ts_daily = parse_timesheet(timesheet_path)
 
-    proposals, actuals, financials, log = [], [], [], []
+    proposals, actuals, financials, log, ledgers = [], [], [], [], []
 
     for num, files in pairs.items():
         entry = {"project_number": num, "estimate_file": "", "transactions_file": "",
@@ -348,6 +424,15 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
             actual_start = tx["first_activity_date"]
             actual_end = tx["last_activity_date"]
             date_source = "transactions" if pd.notna(actual_start) else "unavailable"
+
+        # dated timeline for the budget/hours burn chart — powers "when did
+        # this project first cross into Yellow/Red", not just the final total
+        project_hours_daily = None
+        if ts_daily is not None:
+            project_hours_daily = ts_daily[ts_daily["project_code"] == code][["date", "hours"]]
+        ledger = build_project_ledger(tx["revenue_events"], project_hours_daily, code)
+        if not ledger.empty:
+            ledgers.append(ledger)
 
         planned_cost = est["labor_cost"] + est["materials_cost"] + est["contracted_cost"]
         planned_margin_pct = (
@@ -447,6 +532,13 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
     act_df.to_csv(output_dir / "actual_projects.csv", index=False)
     fin_df.to_csv(output_dir / "project_financials.csv", index=False)
     log_df.to_csv(output_dir / "conversion_log.csv", index=False)
+
+    ledger_df = (
+        pd.concat(ledgers, ignore_index=True) if ledgers
+        else pd.DataFrame(columns=["project_id", "date", "cumulative_revenue", "cumulative_hours"])
+    )
+    ledger_df.to_csv(output_dir / "project_ledger.csv", index=False)
+
     return log_df
 
 
