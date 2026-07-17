@@ -143,7 +143,9 @@ with st.sidebar:
     filter_health  = st.multiselect("Health Status", HEALTH_ORDER, default=HEALTH_ORDER)
     filter_billing = st.multiselect("Billing Type",  ["fixed_fee", "t_and_e"],
                                     default=["fixed_fee", "t_and_e"])
-    filter_pm      = st.multiselect("Project Manager", [], key="pm_filter")
+    filter_pm      = st.multiselect(
+        "Project Manager", st.session_state.get("pm_options", []), key="pm_filter",
+    )
 
     st.divider()
     st.caption("All processing is local.\nNo data leaves your machine.")
@@ -444,8 +446,13 @@ with tab_overview:
 
     with ch2:
         st.markdown("**Health by Project Manager**")
+        pm_display = all_df.copy()
+        pm_display["project_manager"] = (
+            pm_display["project_manager"].fillna("").astype(str).str.strip()
+            .replace("", "Unassigned")
+        )
         pm_health = (
-            all_df.groupby(["project_manager", "health_status"])
+            pm_display.groupby(["project_manager", "health_status"])
             .size()
             .reset_index(name="count")
         )

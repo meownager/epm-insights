@@ -1,3 +1,19 @@
+"""Phase 5 — Local Insights Engine.
+
+Three tiers, each independent:
+  Tier 1: Rule-based pattern analysis  — always works, no dependencies beyond pandas
+  Tier 2: TF-IDF closeout notes search — always works, requires scikit-learn
+  Tier 3: Ollama LLM narrative         — optional; activates when Ollama is running locally
+
+Public API
+----------
+analyse_patterns(metrics, criteria) -> list[Finding]
+build_notes_index(metrics)          -> NotesIndex | None
+search_notes(query, index, metrics) -> list[dict]
+check_ollama()                      -> list[str]   (model names, empty if not running)
+generate_narrative(findings, metrics, model, host) -> str
+"""
+
 from __future__ import annotations
 
 import textwrap
@@ -7,14 +23,18 @@ from typing import Any
 import pandas as pd
 
 
+# ── Finding dataclass ────────────────────────────────────────────────────────
+
 @dataclass
 class Finding:
     title: str
     body: str
-    severity: str = "info"
-    metric: str = ""
+    severity: str = "info"        # "critical" | "warning" | "info" | "positive"
+    metric: str = ""              # "budget" | "hours" | "schedule" | "scope" | ""
     project_ids: list[str] = field(default_factory=list)
 
+
+# ── Tier 1: Rule-based pattern analysis ─────────────────────────────────────
 
 def analyse_patterns(metrics: pd.DataFrame, criteria: dict) -> list[Finding]:
     findings: list[Finding] = []
@@ -26,17 +46,21 @@ def analyse_patterns(metrics: pd.DataFrame, criteria: dict) -> list[Finding]:
     n_yellow = int((metrics["health_status"] == "Yellow").sum())
     n_green  = int((metrics["health_status"] == "Green").sum())
 
+    # 1 — overall picture
     pct_red = n_red / n_total * 100
     sev = "critical" if pct_red >= 30 else ("warning" if pct_red >= 15 else "positive")
     findings.append(Finding(
         title="Portfolio Health Overview",
-        body=(f"{n_total} completed projects audited. "
-              f"{n_red} Red ({pct_red:.0f}%), {n_yellow} Yellow "
-              f"({n_yellow/n_total*100:.0f}%), {n_green} Green "
-              f"({n_green/n_total*100:.0f}%)."),
+        body=(
+            f"{n_total} completed projects audited. "
+            f"{n_red} Red ({pct_red:.0f}%), {n_yellow} Yellow "
+            f"({n_yellow/n_total*100:.0f}%), {n_green} Green "
+            f"({n_green/n_total*100:.0f}%)."
+        ),
         severity=sev,
     ))
 
+    # 2 — dominant risk dimension
     red_yellow = metrics[metrics["health_status"].isin(["Red", "Yellow"])]
     if not red_yellow.empty:
         cp = criteria.get("completed_projects", {})
@@ -56,13 +80,16 @@ def analyse_patterns(metrics: pd.DataFrame, criteria: dict) -> list[Finding]:
         top_dim, top_n = dims[0]
         findings.append(Finding(
             title="Dominant Risk Dimension",
-            body=(f"Among non-Green projects, {top_dim} deviation is the most common trigger: "
-                  f"{top_n} of {len(red_yellow)} projects exceeded the Green threshold on {top_dim}. "
-                  f"Hours: {over_hours}, Schedule: {over_sched}, Budget: {over_budget}."),
+            body=(
+                f"Among non-Green projects, {top_dim} deviation is the most common trigger: "
+                f"{top_n} of {len(red_yellow)} projects exceeded the Green threshold on {top_dim}. "
+                f"Hours: {over_hours}, Schedule: {over_sched}, Budget: {over_budget}."
+            ),
             severity="warning",
             metric=top_dim,
         ))
 
+    # 3 — budget at risk (Red fixed-fee overruns only — company absorbs these)
     red_ff = metrics[
         (metrics["health_status"] == "Red") &
         (metrics["billing_type"] == "fixed_fee") &
@@ -73,53 +100,74 @@ def analyse_patterns(metrics: pd.DataFrame, criteria: dict) -> list[Finding]:
         ids = red_ff["project_id"].tolist()
         findings.append(Finding(
             title="Margin Exposure — Red Fixed-Fee Overruns",
-            body=(f"{len(red_ff)} Red fixed-fee project(s) ran over budget by a combined "
-                  f"${total_at_risk:,.0f}. These overruns are absorbed by the company. "
-                  f"Projects: {', '.join(ids)}."),
+            body=(
+                f"{len(red_ff)} Red fixed-fee project(s) ran over budget by a combined "
+                f"${total_at_risk:,.0f}. These overruns are absorbed by the company. "
+                f"Projects: {', '.join(ids)}."
+            ),
             severity="critical",
             metric="budget",
             project_ids=ids,
         ))
 
+    # 4 — PM performance
+    # project_manager is legitimately blank for auto-converted IES projects
+    # (no PM field exists in that data yet). groupby() drops all-NaN/blank
+    # keys entirely, which would leave pm_counts empty — guard against that
+    # rather than calling idxmax() on nothing.
     if "project_manager" in metrics.columns:
-        pm_counts = (
-            metrics.groupby("project_manager")["health_status"]
-            .value_counts()
-            .unstack(fill_value=0)
-        )
-        for color in ["Red", "Yellow", "Green"]:
-            if color not in pm_counts.columns:
-                pm_counts[color] = 0
-        pm_counts["non_green"] = pm_counts.get("Red", 0) + pm_counts.get("Yellow", 0)
-        worst_pm = pm_counts["non_green"].idxmax()
-        worst_n  = int(pm_counts.loc[worst_pm, "non_green"])
-        total_pm = int(pm_counts.loc[worst_pm, ["Red", "Yellow", "Green"]].sum())
-        if worst_n > 0:
-            reds    = int(pm_counts.loc[worst_pm, "Red"])
-            yellows = int(pm_counts.loc[worst_pm, "Yellow"])
-            findings.append(Finding(
-                title="PM with Most Non-Green Projects",
-                body=(f"{worst_pm} has {worst_n} of {total_pm} projects flagged "
-                      f"({reds} Red, {yellows} Yellow). "
-                      f"Review for systemic estimation or execution patterns."),
-                severity="warning" if reds == 0 else "critical",
-            ))
+        known_pm = metrics[metrics["project_manager"].astype(str).str.strip().replace("nan", "").ne("")]
+        if not known_pm.empty:
+            pm_counts = (
+                known_pm.groupby("project_manager")["health_status"]
+                .value_counts()
+                .unstack(fill_value=0)
+            )
+            for color in ["Red", "Yellow", "Green"]:
+                if color not in pm_counts.columns:
+                    pm_counts[color] = 0
 
+            pm_counts["non_green"] = pm_counts.get("Red", 0) + pm_counts.get("Yellow", 0)
+            if not pm_counts.empty:
+                worst_pm = pm_counts["non_green"].idxmax()
+                worst_n  = int(pm_counts.loc[worst_pm, "non_green"])
+                total_pm = int(pm_counts.loc[worst_pm, ["Red", "Yellow", "Green"]].sum())
+
+                if worst_n > 0:
+                    reds = int(pm_counts.loc[worst_pm, "Red"])
+                    yellows = int(pm_counts.loc[worst_pm, "Yellow"])
+                    findings.append(Finding(
+                        title="PM with Most Non-Green Projects",
+                        body=(
+                            f"{worst_pm} has {worst_n} of {total_pm} projects flagged "
+                            f"({reds} Red, {yellows} Yellow). "
+                            f"Review for systemic estimation or execution patterns."
+                        ),
+                        severity="warning" if reds == 0 else "critical",
+                    ))
+
+    # 5 — client exposure (same blank-data guard as PM, above)
     if "client" in metrics.columns:
+        known_client = metrics[metrics["client"].astype(str).str.strip().replace("nan", "").ne("")]
         client_red = (
-            metrics[metrics["health_status"] == "Red"]
-            .groupby("client").size().sort_values(ascending=False)
+            known_client[known_client["health_status"] == "Red"]
+            .groupby("client")
+            .size()
+            .sort_values(ascending=False)
         )
         if not client_red.empty:
             top_client = client_red.index[0]
             top_n_c = int(client_red.iloc[0])
             findings.append(Finding(
                 title="Client with Most Red Projects",
-                body=(f"{top_client} has {top_n_c} Red project(s). "
-                      f"Consider a relationship review to discuss expectations and change management."),
+                body=(
+                    f"{top_client} has {top_n_c} Red project(s). "
+                    f"Consider a relationship review to discuss expectations and change management."
+                ),
                 severity="warning",
             ))
 
+    # 6 — billing type comparison
     if "billing_type" in metrics.columns:
         for bt in ["fixed_fee", "t_and_e"]:
             bt_df = metrics[metrics["billing_type"] == bt]
@@ -131,12 +179,15 @@ def analyse_patterns(metrics: pd.DataFrame, criteria: dict) -> list[Finding]:
             if bt_pct >= 30:
                 findings.append(Finding(
                     title=f"{label} Projects — Elevated Red Rate",
-                    body=(f"{bt_red} of {len(bt_df)} {label} projects ({bt_pct:.0f}%) are Red. "
-                          f"{'Fixed-fee overruns directly impact company margin.' if bt == 'fixed_fee' else 'T&E overruns may indicate scope growth without change orders.'}"),
+                    body=(
+                        f"{bt_red} of {len(bt_df)} {label} projects ({bt_pct:.0f}%) are Red. "
+                        f"{'Fixed-fee overruns directly impact company margin.' if bt == 'fixed_fee' else 'T&E overruns may indicate scope growth without change orders.'}"
+                    ),
                     severity="critical",
                     metric="budget",
                 ))
 
+    # 7 — scope growth without change order (keyword scan of closeout notes)
     if "closeout_notes" in metrics.columns:
         scope_keywords = ["scope", "change order", "added", "grew", "expanded",
                           "requested", "additional", "unplanned"]
@@ -144,14 +195,18 @@ def analyse_patterns(metrics: pd.DataFrame, criteria: dict) -> list[Finding]:
         flagged = []
         for _, row in metrics[metrics["health_status"].isin(["Red", "Yellow"])].iterrows():
             notes = str(row.get("closeout_notes", "")).lower()
-            if any(kw in notes for kw in scope_keywords) and not any(kw in notes for kw in co_keywords):
+            has_scope = any(kw in notes for kw in scope_keywords)
+            has_co    = any(kw in notes for kw in co_keywords)
+            if has_scope and not has_co:
                 flagged.append(row.get("project_id", ""))
         if flagged:
             findings.append(Finding(
                 title="Potential Scope Growth Without Change Order",
-                body=(f"{len(flagged)} project(s) have closeout notes suggesting scope changes "
-                      f"with no change order documented: {', '.join(flagged)}. "
-                      f"Review whether missed change orders contributed to overruns."),
+                body=(
+                    f"{len(flagged)} project(s) have closeout notes suggesting scope changes "
+                    f"with no change order documented: {', '.join(flagged)}. "
+                    f"Review whether missed change orders contributed to overruns."
+                ),
                 severity="critical",
                 metric="scope",
                 project_ids=flagged,
@@ -159,6 +214,8 @@ def analyse_patterns(metrics: pd.DataFrame, criteria: dict) -> list[Finding]:
 
     return findings
 
+
+# ── Tier 2: TF-IDF closeout notes search ────────────────────────────────────
 
 class NotesIndex:
     def __init__(self, vectorizer: Any, matrix: Any, project_ids: list[str]):
@@ -186,8 +243,12 @@ def build_notes_index(metrics: pd.DataFrame) -> NotesIndex | None:
     return NotesIndex(vectorizer=vectorizer, matrix=matrix, project_ids=ids)
 
 
-def search_notes(query: str, index: NotesIndex, metrics: pd.DataFrame,
-                 top_k: int = 3) -> list[dict]:
+def search_notes(
+    query: str,
+    index: NotesIndex,
+    metrics: pd.DataFrame,
+    top_k: int = 3,
+) -> list[dict]:
     try:
         import numpy as np
         from sklearn.metrics.pairwise import cosine_similarity
@@ -206,14 +267,16 @@ def search_notes(query: str, index: NotesIndex, metrics: pd.DataFrame,
             continue
         r = row.iloc[0]
         results.append({
-            "project_id":     pid,
-            "project_name":   r.get("project_name", ""),
-            "health_status":  r.get("health_status", ""),
+            "project_id":   pid,
+            "project_name": r.get("project_name", ""),
+            "health_status":r.get("health_status", ""),
             "closeout_notes": r.get("closeout_notes", ""),
-            "score":          float(sims[i]),
+            "score":        float(sims[i]),
         })
     return results
 
+
+# ── Tier 3: Ollama integration ───────────────────────────────────────────────
 
 def check_ollama(host: str = "http://localhost:11434") -> list[str]:
     try:
@@ -226,14 +289,22 @@ def check_ollama(host: str = "http://localhost:11434") -> list[str]:
     return []
 
 
-def generate_narrative(findings: list[Finding], metrics: pd.DataFrame,
-                       model: str, host: str = "http://localhost:11434") -> str:
+def generate_narrative(
+    findings: list[Finding],
+    metrics: pd.DataFrame,
+    model: str,
+    host: str = "http://localhost:11434",
+) -> str:
     try:
         import requests
     except ImportError:
         return "requests library not available."
 
-    summary_lines = [f"- [{f.severity.upper()}] {f.title}: {f.body}" for f in findings]
+    # build a compact context block
+    summary_lines = []
+    for f in findings:
+        summary_lines.append(f"- [{f.severity.upper()}] {f.title}: {f.body}")
+
     project_lines = []
     for _, row in metrics.iterrows():
         bt = str(row.get("billing_type", "")).replace("_", " ")
@@ -248,9 +319,9 @@ def generate_narrative(findings: list[Finding], metrics: pd.DataFrame,
         )
 
     prompt = textwrap.dedent(f"""
-        You are an engineering project management analyst. Write a concise executive summary
-        (4-6 sentences) for an engineering leadership team based on this completed project
-        health audit. Focus on patterns, risks, and actionable observations.
+        You are an engineering project management analyst. You have been given the results
+        of a completed project health audit. Write a concise executive summary (4-6 sentences)
+        for an engineering leadership team. Focus on patterns, risks, and actionable observations.
         Do not list every project individually. Be direct and specific.
 
         AUDIT FINDINGS:
@@ -263,9 +334,11 @@ def generate_narrative(findings: list[Finding], metrics: pd.DataFrame,
     """).strip()
 
     try:
-        r = requests.post(f"{host}/api/generate",
-                          json={"model": model, "prompt": prompt, "stream": False},
-                          timeout=60)
+        r = requests.post(
+            f"{host}/api/generate",
+            json={"model": model, "prompt": prompt, "stream": False},
+            timeout=60,
+        )
         if r.status_code == 200:
             return r.json().get("response", "No response from model.").strip()
         return f"Ollama returned status {r.status_code}."
