@@ -1,11 +1,19 @@
-"""QuickBooks export converter — turns raw per-project exports into audit inputs.
+"""IES financial data converter — turns raw per-project exports into audit inputs.
 
-EPM workflow:
-    1. Export each project's Estimate and Transactions from QuickBooks
+Source data: IES (the company's financial system), NOT QuickBooks. Each
+completed project has two IES sheets — Estimate (the baseline) and
+Transactions (the actual ledger: invoices, credit memos, time charges,
+bills, expenses, purchase orders). A separate company-wide timesheet export
+supplies actual hours and actual project dates.
+
+EPM workflow (fully automated — no manual data entry required for actuals):
+    1. Export each project's Estimate and Transactions sheets from IES
        (naming: <num>_Estimate.xls / <num>_Transactions.xls — .csv also accepted)
     2. Drop the pairs into one folder (e.g. data/real/exports/)
-    3. Optionally add the company-wide QuickBooks Time export (timesheet*.csv)
-    4. Run:  python scripts/convert_quickbooks.py --input data/real/exports --output data/real/audit_inputs
+    3. Add the company-wide timesheet export (timesheet*.csv)
+    4. Run:  python scripts/convert_ies.py --input data/real/exports --output data/real/audit_inputs --timesheet data/real/timesheet_report.csv
+
+    Or use the Upload panel in the dashboard sidebar instead of the command line.
 
 Outputs:
     proposal_projects.csv   — baseline per project leg (audit engine input)
@@ -13,12 +21,25 @@ Outputs:
     project_financials.csv  — extended metrics: margin, COs, WIP, invoice aging
     conversion_log.csv      — per project: what was found, data completeness
 
+KNOWN DATA GAP — proposed (baseline) start/end dates:
+    Neither the IES Estimate sheet nor the Transactions sheet nor the
+    timesheet contains a committed/promised delivery date — only actual
+    work dates and billing dates exist. Actual dates are therefore fully
+    automated (derived from timesheet coverage, falling back to invoice
+    dates). Proposed dates are left blank because there is nothing to
+    derive them from; fabricating one would be dishonest. Schedule
+    deviation is not computed for these projects and the engine marks
+    them "schedule not measured" rather than silently scoring them Green.
+    Project name, client, and PM are also left blank — they were not
+    found in any IES export reviewed so far.
+
 All processing is local. Real data never leaves the machine.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import re
 from datetime import datetime
 from pathlib import Path
@@ -38,16 +59,28 @@ LABOR_PREFIXES = ("team blue:", "contracted labor")
 # ── file reading ─────────────────────────────────────────────────────────────
 
 def read_table(path: Path) -> pd.DataFrame:
-    """Read a QuickBooks export regardless of .xls or .csv extension."""
+    """Read an IES export regardless of .xls or .csv extension.
+
+    CSV exports of these sheets are commonly ragged — e.g. the Transactions
+    sheet's first line is a single-field status caption while data rows have
+    seven fields. Excel handles this natively (blank cells); a plain
+    pd.read_csv does not and raises a tokenizing error. Read rows manually
+    and pad every row to the widest row's length, the CSV equivalent of
+    Excel's blank-cell padding.
+    """
     if path.suffix.lower() in (".xls", ".xlsx"):
         return pd.read_excel(path, sheet_name=0, header=None)
-    return pd.read_csv(path, header=None)
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        rows = list(csv.reader(f))
+    width = max((len(r) for r in rows), default=0)
+    rows = [r + [None] * (width - len(r)) for r in rows]
+    return pd.DataFrame(rows)
 
 
 # ── estimate parsing ─────────────────────────────────────────────────────────
 
 def parse_estimate(path: Path) -> dict:
-    """Extract baseline data from an Estimate export."""
+    """Extract baseline data from an IES Estimate sheet."""
     raw = read_table(path)
     header_row = None
     for i in range(min(3, len(raw))):
@@ -55,7 +88,7 @@ def parse_estimate(path: Path) -> dict:
             header_row = i
             break
     if header_row is None:
-        raise ValueError(f"{path.name}: no SERVICE DATE header found — not an estimate export?")
+        raise ValueError(f"{path.name}: no SERVICE DATE header found — not an IES estimate sheet?")
 
     cols = [str(c) for c in raw.iloc[header_row]]
     df = raw.iloc[header_row + 1:].reset_index(drop=True)
@@ -140,7 +173,7 @@ def parse_estimate(path: Path) -> dict:
                 out["co_count"] += 1
                 out["co_dollars"] += client_val
         else:
-            # unknown service line — count toward client total only (already done)
+            # unknown service line — still counted toward client total above
             pass
 
     out["rates"] = sorted(out["rates"])
@@ -150,7 +183,7 @@ def parse_estimate(path: Path) -> dict:
 # ── transactions parsing ─────────────────────────────────────────────────────
 
 def parse_transactions(path: Path) -> dict:
-    """Extract actuals from a Transactions export."""
+    """Extract actuals from an IES Transactions sheet."""
     raw = read_table(path)
     header_row = None
     for i in range(min(4, len(raw))):
@@ -158,7 +191,7 @@ def parse_transactions(path: Path) -> dict:
             header_row = i
             break
     if header_row is None:
-        raise ValueError(f"{path.name}: no Date header row found — not a transactions export?")
+        raise ValueError(f"{path.name}: no Date header row found — not an IES transactions sheet?")
 
     df = raw.iloc[header_row + 1:].reset_index(drop=True)
     df.columns = ["date", "type", "no", "from_to", "memo", "amount", "status"][: len(df.columns)]
@@ -207,10 +240,10 @@ def parse_transactions(path: Path) -> dict:
 # ── timesheet parsing ────────────────────────────────────────────────────────
 
 def parse_timesheet(path: Path) -> pd.DataFrame:
-    """Return hours per project leg from a QuickBooks Time export."""
+    """Return hours + actual date coverage per project leg from the timesheet export."""
     ts = pd.read_csv(path)
     if "jobcode_2" not in ts.columns or "hours" not in ts.columns:
-        raise ValueError(f"{path.name}: expected QuickBooks Time columns (jobcode_2, hours)")
+        raise ValueError(f"{path.name}: expected timesheet columns (jobcode_2, hours) not found")
     codes = ts["jobcode_2"].astype(str).str.extract(PROJECT_CODE_RE)
     ts["project_code"] = codes[0] + "-" + codes[1]
     proj = ts.dropna(subset=["project_code"])
@@ -282,13 +315,14 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
 
         # hours actuals: timesheet first, invoice-derived fallback for T&E
         logged_hours = None
-        first_logged = None
+        first_logged = last_logged = None
         hours_source = "unavailable"
         if ts_agg is not None:
             row = ts_agg[ts_agg["project_code"] == code]
             if not row.empty:
                 logged_hours = float(row["logged_hours"].iloc[0])
                 first_logged = pd.to_datetime(row["first_logged"].iloc[0], errors="coerce")
+                last_logged = pd.to_datetime(row["last_logged"].iloc[0], errors="coerce")
                 hours_source = "logged"
         derived_hours = None
         if est["rates"] and len(est["rates"]) == 1 and tx["time_charge_total"] > 0:
@@ -296,6 +330,24 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
             if hours_source == "unavailable":
                 hours_source = "derived_from_time_charges"
         actual_hours = logged_hours if logged_hours is not None else derived_hours
+
+        # actual dates: prefer timesheet-logged work dates (most accurate —
+        # invoice dates reflect billing cadence, not when work happened),
+        # fall back to invoice dates, then any transaction activity date.
+        # Fully automatic — no manual entry required.
+        date_source = "unavailable"
+        if first_logged is not None and pd.notna(first_logged):
+            actual_start = first_logged
+            actual_end = last_logged
+            date_source = "timesheet"
+        elif pd.notna(tx["first_invoice_date"]):
+            actual_start = tx["first_invoice_date"]
+            actual_end = tx["last_invoice_date"]
+            date_source = "invoices"
+        else:
+            actual_start = tx["first_activity_date"]
+            actual_end = tx["last_activity_date"]
+            date_source = "transactions" if pd.notna(actual_start) else "unavailable"
 
         planned_cost = est["labor_cost"] + est["materials_cost"] + est["contracted_cost"]
         planned_margin_pct = (
@@ -328,14 +380,14 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
 
         proposals.append({
             "project_id": code,
-            "project_name": "",  # EPM fills in or comes from jobcode list
+            "project_name": "",   # not present in any IES export reviewed so far
             "proposed_budget": round(est["client_total"], 2),
             "proposed_hours": est["labor_hours"],
-            "proposed_start_date": "",   # not in exports — EPM enters from proposal
-            "proposed_end_date": "",     # not in exports — EPM enters from proposal
+            "proposed_start_date": "",   # no baseline schedule field exists in IES data
+            "proposed_end_date": "",     # — see module docstring "KNOWN DATA GAP"
             "proposed_resource_count": "",
-            "project_manager": "",
-            "client": "",
+            "project_manager": "",   # not present in any IES export reviewed so far
+            "client": "",            # not present in any IES export reviewed so far
             "project_type": est["business_class"],
             "billing_type": billing_type,
         })
@@ -343,8 +395,8 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
             "project_id": code,
             "actual_budget": round(tx["revenue_invoiced"], 2),
             "actual_hours": actual_hours if actual_hours is not None else "",
-            "actual_start_date": tx["first_activity_date"].date().isoformat() if pd.notna(tx["first_activity_date"]) else "",
-            "actual_end_date": tx["last_invoice_date"].date().isoformat() if pd.notna(tx["last_invoice_date"]) else "",
+            "actual_start_date": actual_start.date().isoformat() if pd.notna(actual_start) else "",
+            "actual_end_date": actual_end.date().isoformat() if pd.notna(actual_end) else "",
             "status": status,
             "actual_resource_count": "",
             "closeout_notes": "",
@@ -379,9 +431,11 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
             "logged_hours": logged_hours if logged_hours is not None else "",
             "derived_hours": derived_hours if derived_hours is not None else "",
             "proposed_hours": est["labor_hours"],
+            "date_source": date_source,
+            "schedule_baseline_available": False,
         })
         entry["status"] = "OK"
-        entry["notes"].append(f"{code} {billing_type} hours={hours_source}")
+        entry["notes"].append(f"{code} {billing_type} hours={hours_source} dates={date_source}")
         log.append(entry)
 
     prop_df = pd.DataFrame(proposals)
@@ -397,10 +451,10 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Convert QuickBooks exports to audit inputs")
+    ap = argparse.ArgumentParser(description="Convert IES financial exports to audit inputs")
     ap.add_argument("--input", required=True, help="Folder containing <num>_Estimate + <num>_Transactions files")
     ap.add_argument("--output", required=True, help="Folder for generated audit input CSVs")
-    ap.add_argument("--timesheet", help="Optional QuickBooks Time export CSV (company-wide)")
+    ap.add_argument("--timesheet", help="Company-wide timesheet export CSV")
     args = ap.parse_args()
 
     log = convert(
@@ -411,8 +465,10 @@ def main() -> None:
     print(log.to_string(index=False))
     ok = (log["status"] == "OK").sum()
     print(f"\nConverted {ok} of {len(log)} projects → {args.output}")
-    print("NOTE: proposed start/end dates, project names, PM and client fields are left")
-    print("blank for EPM entry — they are not present in QuickBooks exports.")
+    print("NOTE: project name, client, and PM are left blank — not present in IES exports.")
+    print("NOTE: proposed (baseline) schedule dates are left blank — no committed-date field")
+    print("exists in IES data. Schedule deviation is not computed for these projects; the")
+    print("engine marks them 'schedule not measured' rather than assuming they were on time.")
 
 
 if __name__ == "__main__":

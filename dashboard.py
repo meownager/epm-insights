@@ -19,6 +19,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent / "scripts"))
 from completed_project_health import compute_metrics, load_criteria, write_run_record
+from convert_ies import convert as convert_ies_exports
 from generate_html_report import build_report
 from insights import analyse_patterns, build_notes_index, search_notes
 from quality_scoring import load_rubric, score_portfolio
@@ -33,6 +34,29 @@ HEALTH_ORDER  = ["Red", "Yellow", "Green"]
 HEALTH_COLORS = {"Red": "#EF4444", "Yellow": "#F59E0B", "Green": "#22C55E"}
 HEALTH_BG     = {"Red": "#FEE2E2", "Yellow": "#FEF3C7", "Green": "#DCFCE7"}
 HEALTH_TEXT   = {"Red": "#991B1B", "Yellow": "#78350F", "Green": "#166534"}
+
+
+def _run_ies_conversion(estimate_transaction_files, timesheet_file, work_dir: Path) -> dict:
+    """Save uploaded IES files to disk and run the converter. Returns dict of DataFrames."""
+    in_dir = work_dir / "ies_uploads"
+    out_dir = work_dir / "ies_converted"
+    in_dir.mkdir(parents=True, exist_ok=True)
+
+    for f in estimate_transaction_files:
+        (in_dir / f.name).write_bytes(f.getvalue())
+
+    timesheet_path = None
+    if timesheet_file is not None:
+        timesheet_path = in_dir / timesheet_file.name
+        timesheet_path.write_bytes(timesheet_file.getvalue())
+
+    log = convert_ies_exports(in_dir, out_dir, timesheet_path)
+    return {
+        "log": log,
+        "proposal": pd.read_csv(out_dir / "proposal_projects.csv"),
+        "actual": pd.read_csv(out_dir / "actual_projects.csv"),
+        "financials": pd.read_csv(out_dir / "project_financials.csv"),
+    }
 
 # ── page config ─────────────────────────────────────────────────────────────
 
@@ -76,22 +100,43 @@ with st.sidebar:
     st.markdown("Completed project health audit")
     st.divider()
 
-    st.markdown("**Data Files**")
-    proposal_path = st.text_input("Proposal CSV", value=DEFAULT_PROPOSAL)
-    actual_path   = st.text_input("Actual CSV",   value=DEFAULT_ACTUAL)
-    criteria_path = st.text_input("Criteria YAML", value=DEFAULT_CRITERIA)
+    st.markdown("**1. Upload project data**")
+    st.caption(
+        "Select every IES Estimate + Transactions file for the projects "
+        "you want to audit, plus the timesheet export. No manual data entry."
+    )
+    uploaded_ies_files = st.file_uploader(
+        "IES Estimate + Transactions files",
+        type=["xls", "xlsx", "csv"],
+        accept_multiple_files=True,
+        help="Select all <projectnumber>_Estimate and <projectnumber>_Transactions "
+             "files at once (Ctrl/Cmd-click to multi-select).",
+    )
+    uploaded_timesheet = st.file_uploader(
+        "Timesheet export (company-wide, optional)",
+        type=["csv"],
+        help="Powers actual hours and actual dates for T&E projects, and margin "
+             "analysis for fixed-fee projects. Skip it and the audit still runs "
+             "on invoice data alone.",
+    )
+    convert_clicked = st.button(
+        "🔄  Convert & Run Audit", type="primary", use_container_width=True,
+        disabled=not uploaded_ies_files,
+    )
 
-    with st.expander("Optional: financial & quality data"):
+    with st.expander("Advanced: use already-converted CSVs instead"):
+        proposal_path = st.text_input("Proposal CSV", value=DEFAULT_PROPOSAL)
+        actual_path   = st.text_input("Actual CSV",   value=DEFAULT_ACTUAL)
+        criteria_path = st.text_input("Criteria YAML", value=DEFAULT_CRITERIA)
         financials_path = st.text_input(
-            "Financials CSV (from converter)", value="",
+            "Financials CSV (optional)", value="",
             help="data/real/audit_inputs/project_financials.csv",
         )
         scores_path = st.text_input(
-            "Quality scores CSV", value="",
+            "Quality scores CSV (optional)", value="",
             help="Columns: project_id, category, score, comments",
         )
-
-    run_clicked = st.button("▶  Run Audit", type="primary", use_container_width=True)
+        run_clicked = st.button("▶  Run Audit from CSVs", use_container_width=True)
 
     st.divider()
     st.markdown("**Filters**")
@@ -111,9 +156,77 @@ if "metrics" not in st.session_state:
     st.session_state.meta      = {}
     st.session_state.criteria  = {}
     st.session_state.scorecard = None
+    st.session_state.ies_financials = None
+    st.session_state.no_schedule_baseline = False
 
 
-# ── run audit ────────────────────────────────────────────────────────────────
+# ── convert uploaded IES files + run audit ──────────────────────────────────
+
+if convert_clicked:
+    with st.spinner("Converting IES files and running audit…"):
+        with tempfile.TemporaryDirectory() as tmp:
+            work_dir = Path(tmp)
+            try:
+                converted = _run_ies_conversion(uploaded_ies_files, uploaded_timesheet, work_dir)
+            except Exception as e:
+                st.error(f"Conversion failed: {e}")
+                converted = None
+
+            if converted is not None:
+                skipped = converted["log"][converted["log"]["status"] == "SKIPPED"]
+                if not skipped.empty:
+                    st.warning(
+                        f"{len(skipped)} project(s) skipped — missing an Estimate or "
+                        f"Transactions file: {', '.join(skipped['project_number'].astype(str))}"
+                    )
+
+                criteria = load_criteria(Path(DEFAULT_CRITERIA))
+                cp = criteria["completed_projects"]
+                eligible = set(cp.get("eligible_statuses", ["completed", "closed"]))
+                proposal, actual, financials = (
+                    converted["proposal"], converted["actual"], converted["financials"],
+                )
+
+                if proposal.empty:
+                    st.error("No projects converted successfully — check the uploaded files.")
+                else:
+                    metrics = compute_metrics(proposal, actual, criteria, eligible)
+
+                    proposal_tmp = work_dir / "proposal_projects.csv"
+                    actual_tmp = work_dir / "actual_projects.csv"
+                    proposal.to_csv(proposal_tmp, index=False)
+                    actual.to_csv(actual_tmp, index=False)
+                    run_out = write_run_record(
+                        output_dir=work_dir,
+                        criteria=criteria,
+                        criteria_path=Path(DEFAULT_CRITERIA),
+                        proposal_path=proposal_tmp,
+                        actual_path=actual_tmp,
+                        metrics=metrics,
+                    )
+                    meta = json.loads(run_out.read_text())
+
+                    st.session_state.metrics  = metrics
+                    st.session_state.meta     = meta
+                    st.session_state.criteria = criteria
+                    st.session_state.ies_financials = financials
+                    st.session_state.no_schedule_baseline = True
+
+                    st.session_state.scorecard = None
+                    try:
+                        rubric = load_rubric()
+                        st.session_state.scorecard = score_portfolio(
+                            metrics, criteria, rubric, financials=financials, scores=None,
+                        )
+                    except Exception as e:
+                        st.warning(f"Quality/financial scoring skipped: {e}")
+
+                    pms = sorted(metrics["project_manager"].dropna().unique().tolist())
+                    st.session_state["pm_options"] = pms
+                    st.rerun()
+
+
+# ── run audit (advanced: pre-converted CSVs) ────────────────────────────────
 
 if run_clicked:
     errors = []
@@ -150,6 +263,8 @@ if run_clicked:
         st.session_state.metrics  = metrics
         st.session_state.meta     = meta
         st.session_state.criteria = criteria
+        st.session_state.ies_financials = None
+        st.session_state.no_schedule_baseline = False
 
         # optional quality/financial scoring layer
         st.session_state.scorecard = None
@@ -236,6 +351,16 @@ st.markdown(
     f'</div>',
     unsafe_allow_html=True,
 )
+
+if st.session_state.get("no_schedule_baseline"):
+    st.info(
+        "**Schedule not measured for these projects.** IES exports contain actual "
+        "work and billing dates, but no committed/proposed delivery date — so schedule "
+        "deviation cannot be computed. Health status below reflects budget and hours "
+        "only for projects converted this way. Client, PM, and project name were also "
+        "not found in the IES data and are shown blank.",
+        icon="ℹ️",
+    )
 
 
 # ── summary cards ────────────────────────────────────────────────────────────

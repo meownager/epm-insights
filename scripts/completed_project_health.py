@@ -233,6 +233,15 @@ def compute_metrics(
         merged["resource_dev_abs"] = pd.NA
         merged["resource_dev_pct"] = pd.NA
 
+    # Transparency flag: was a schedule baseline actually available for this
+    # project, or is schedule_dev_days silently defaulting to "on time"?
+    # Auto-converted projects (no proposed delivery date in the source data)
+    # must not be allowed to look like they hit a schedule that was never
+    # recorded — classify_health's own default-to-0 behavior is preserved
+    # for backward compatibility, but this column lets reports and the
+    # dashboard say "schedule not measured" instead of implying Green.
+    merged["schedule_measured"] = merged["proposed_end_date"].notna() & merged["actual_end_date"].notna()
+
     if merged.empty:
         merged["health_status"] = pd.Series(dtype=str)
         merged["audit_finding"] = pd.Series(dtype=str)
@@ -285,6 +294,7 @@ def main() -> None:
         "actual_start_date",
         "actual_end_date",
         "schedule_dev_days",
+        "schedule_measured",
         "proposed_duration_days",
         "actual_duration_days",
         "schedule_dev_pct",

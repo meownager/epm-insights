@@ -1,6 +1,6 @@
-"""Known-answer tests for the QuickBooks converter — synthetic fixtures only.
+"""Known-answer tests for the IES financial data converter — synthetic fixtures only.
 
-These fixtures mimic the structure of real QuickBooks exports (estimate +
+These fixtures mimic the structure of real IES exports (estimate +
 transactions) with entirely fictional numbers. No real company data.
 """
 
@@ -11,10 +11,11 @@ import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
-from convert_quickbooks import (
+from convert_ies import (
     convert,
     find_pairs,
     parse_estimate,
+    parse_timesheet,
     parse_transactions,
 )
 
@@ -38,6 +39,11 @@ def write_transactions(path: Path, rows: list[list]) -> None:
     data = [["Status: All statuses", "", "", "", "", "", ""],
             ["Date", "Type", "No.", "From / To", "Memo", "Amount", "Status"]] + rows
     pd.DataFrame(data).to_csv(path, index=False, header=False)
+
+
+def write_timesheet(path: Path, rows: list[dict]) -> None:
+    cols = ["username", "jobcode_2", "hours", "local_date"]
+    pd.DataFrame(rows, columns=cols).to_csv(path, index=False)
 
 
 @pytest.fixture
@@ -142,6 +148,38 @@ def test_transactions_time_charge_total(t_and_e_project):
     assert tx["time_charge_total"] == 15000
 
 
+def test_ragged_csv_transactions_does_not_crash(tmp_path):
+    """Regression: a literal raw CSV export (1-field status line, 7-field
+    data rows) must not raise a pandas tokenizing error. The .xls path pads
+    blank cells automatically; the .csv path must do the same manually."""
+    raw = (
+        "Status: All statuses Delivery Method: Any Date: All\n"
+        "Date,Type,No.,From / To,Memo,Amount,Status\n"
+        "06/01/2026,Invoice,200001,90005-F - Ragged Test,,5000,paid\n"
+        "01/15/2026,Estimate,2026-005,90005-F - Ragged Test,,5000,applied\n"
+    )
+    path = tmp_path / "90005_Transactions.csv"
+    path.write_text(raw)
+    tx = parse_transactions(path)
+    assert tx["project_code"] == "90005-F"
+    assert tx["revenue_invoiced"] == 5000
+
+
+# ── parse_timesheet ──────────────────────────────────────────────────────────
+
+def test_parse_timesheet_aggregates_by_project(tmp_path):
+    write_timesheet(tmp_path / "timesheet.csv", [
+        {"username": "a@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 8, "local_date": "2026-01-20"},
+        {"username": "a@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 6, "local_date": "2026-01-21"},
+        {"username": "b@co.com", "jobcode_2": "90002-T - Support Block", "hours": 4, "local_date": "2026-04-10"},
+    ])
+    agg = parse_timesheet(tmp_path / "timesheet.csv")
+    row = agg[agg["project_code"] == "90001-F"].iloc[0]
+    assert row["logged_hours"] == 14
+    assert row["first_logged"] == "2026-01-20"
+    assert row["last_logged"] == "2026-01-21"
+
+
 # ── find_pairs / convert end-to-end ─────────────────────────────────────────
 
 def test_find_pairs_groups_by_number(fixed_fee_project):
@@ -167,6 +205,55 @@ def test_convert_end_to_end(fixed_fee_project, tmp_path_factory):
     assert act["status"].iloc[0] == "completed"
     assert fin["co_count"].iloc[0] == 1
     assert fin["external_cost_bills"].iloc[0] == 3000
+
+
+def test_convert_no_timesheet_dates_from_invoices(fixed_fee_project, tmp_path_factory):
+    """No timesheet supplied → actual dates automatically fall back to invoice dates."""
+    out = tmp_path_factory.mktemp("out")
+    convert(fixed_fee_project, out)
+    act = pd.read_csv(out / "actual_projects.csv")
+    fin = pd.read_csv(out / "project_financials.csv")
+    assert act["actual_start_date"].iloc[0] == "2026-02-01"  # earliest invoice
+    assert act["actual_end_date"].iloc[0] == "2026-06-01"    # latest invoice
+    assert fin["date_source"].iloc[0] == "invoices"
+
+
+def test_convert_prefers_timesheet_dates_over_invoices(fixed_fee_project, tmp_path_factory):
+    """When a timesheet is supplied, logged work dates take priority over invoice dates."""
+    write_timesheet(fixed_fee_project / "timesheet.csv", [
+        {"username": "a@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 8, "local_date": "2025-11-03"},
+        {"username": "a@co.com", "jobcode_2": "90001-F - Widget Automation", "hours": 8, "local_date": "2026-05-15"},
+    ])
+    out = tmp_path_factory.mktemp("out")
+    convert(fixed_fee_project, out, timesheet_path=fixed_fee_project / "timesheet.csv")
+    act = pd.read_csv(out / "actual_projects.csv")
+    fin = pd.read_csv(out / "project_financials.csv")
+    assert act["actual_start_date"].iloc[0] == "2025-11-03"
+    assert act["actual_end_date"].iloc[0] == "2026-05-15"
+    assert fin["date_source"].iloc[0] == "timesheet"
+
+
+def test_convert_no_manual_fields_required(fixed_fee_project, tmp_path_factory):
+    """Converter output is fully populated for actuals with zero manual entry required."""
+    out = tmp_path_factory.mktemp("out")
+    convert(fixed_fee_project, out)
+    act = pd.read_csv(out / "actual_projects.csv")
+    row = act.iloc[0]
+    assert row["actual_budget"] > 0
+    assert str(row["actual_start_date"]) != "nan" and row["actual_start_date"] != ""
+    assert str(row["actual_end_date"]) != "nan" and row["actual_end_date"] != ""
+    assert row["status"] in ("completed", "active")
+
+
+def test_convert_proposed_dates_left_blank_not_fabricated(fixed_fee_project, tmp_path_factory):
+    """Baseline schedule dates don't exist in IES data — must stay blank, never guessed."""
+    out = tmp_path_factory.mktemp("out")
+    convert(fixed_fee_project, out)
+    prop = pd.read_csv(out / "proposal_projects.csv")
+    fin = pd.read_csv(out / "project_financials.csv")
+    assert pd.isna(prop["proposed_start_date"].iloc[0]) or prop["proposed_start_date"].iloc[0] == ""
+    assert pd.isna(prop["proposed_end_date"].iloc[0]) or prop["proposed_end_date"].iloc[0] == ""
+    assert fin["schedule_baseline_available"].iloc[0] == False
 
 
 def test_convert_t_and_e_derived_hours(t_and_e_project, tmp_path_factory):
