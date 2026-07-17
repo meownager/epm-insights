@@ -9,15 +9,13 @@ import json
 import platform
 import shutil
 import sys
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
 
-from completed_project_health import compute_metrics, load_criteria, write_run_record
-from generate_html_report import build_report
-
-
+from completed_project_health import compute_metrics, load_criteria
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLE_PROPOSAL = ROOT / "data" / "sample" / "proposal_projects.csv"
 SAMPLE_ACTUAL = ROOT / "data" / "sample" / "actual_projects.csv"
@@ -46,7 +44,6 @@ def build_bundle(output_dir: Path) -> dict:
 
     detail_out = report_dir / "completed_project_health_detail.csv"
     summary_out = report_dir / "completed_project_health_summary.csv"
-    html_out = report_dir / "audit_report.html"
 
     metrics.to_csv(detail_out, index=False)
     (
@@ -58,16 +55,24 @@ def build_bundle(output_dir: Path) -> dict:
         .to_csv(summary_out, index=False)
     )
 
-    run_record_path = write_run_record(
-        output_dir=report_dir,
-        criteria=criteria,
-        criteria_path=CRITERIA_PATH,
-        proposal_path=SAMPLE_PROPOSAL,
-        actual_path=SAMPLE_ACTUAL,
-        metrics=metrics,
-    )
-    run_record = json.loads(run_record_path.read_text(encoding="utf-8"))
-    html_out.write_text(build_report(metrics, run_record), encoding="utf-8")
+    run_id = str(uuid.uuid4())
+    timestamp = datetime.now(timezone.utc).isoformat()
+    run_record = {
+        "run_id": run_id,
+        "timestamp": timestamp,
+        "criteria_version": criteria.get("version", "unknown"),
+        "criteria_file": str(CRITERIA_PATH.relative_to(ROOT)),
+        "proposal_file": str(SAMPLE_PROPOSAL.relative_to(ROOT)),
+        "actual_file": str(SAMPLE_ACTUAL.relative_to(ROOT)),
+        "proposal_fingerprint": sha256_file(SAMPLE_PROPOSAL),
+        "actual_fingerprint": sha256_file(SAMPLE_ACTUAL),
+        "project_count": len(metrics),
+        "health_summary": metrics["health_status"].value_counts().to_dict(),
+    }
+    runs_dir = report_dir / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    run_record_path = runs_dir / "run_repro_sample.json"
+    run_record_path.write_text(json.dumps(run_record, indent=2), encoding="utf-8")
 
     manifest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -85,13 +90,11 @@ def build_bundle(output_dir: Path) -> dict:
             "detail_csv": str(detail_out.relative_to(output_dir)),
             "summary_csv": str(summary_out.relative_to(output_dir)),
             "run_record": str(run_record_path.relative_to(output_dir)),
-            "html_report": str(html_out.relative_to(output_dir)),
         },
         "artifact_hashes": {
             "detail_csv_sha256": sha256_file(detail_out),
             "summary_csv_sha256": sha256_file(summary_out),
             "run_record_sha256": sha256_file(run_record_path),
-            "html_report_sha256": sha256_file(html_out),
         },
     }
 
