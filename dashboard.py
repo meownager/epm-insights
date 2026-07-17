@@ -20,10 +20,8 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parent / "scripts"))
 from completed_project_health import compute_metrics, load_criteria, write_run_record
 from generate_html_report import build_report
-from insights import (
-    analyse_patterns, build_notes_index, search_notes,
-    check_ollama, generate_narrative,
-)
+from insights import analyse_patterns, build_notes_index, search_notes
+from quality_scoring import load_rubric, score_portfolio
 
 # ── constants ───────────────────────────────────────────────────────────────
 
@@ -83,6 +81,16 @@ with st.sidebar:
     actual_path   = st.text_input("Actual CSV",   value=DEFAULT_ACTUAL)
     criteria_path = st.text_input("Criteria YAML", value=DEFAULT_CRITERIA)
 
+    with st.expander("Optional: financial & quality data"):
+        financials_path = st.text_input(
+            "Financials CSV (from converter)", value="",
+            help="data/real/audit_inputs/project_financials.csv",
+        )
+        scores_path = st.text_input(
+            "Quality scores CSV", value="",
+            help="Columns: project_id, category, score, comments",
+        )
+
     run_clicked = st.button("▶  Run Audit", type="primary", use_container_width=True)
 
     st.divider()
@@ -99,9 +107,10 @@ with st.sidebar:
 # ── session state ────────────────────────────────────────────────────────────
 
 if "metrics" not in st.session_state:
-    st.session_state.metrics  = None
-    st.session_state.meta     = {}
-    st.session_state.criteria = {}
+    st.session_state.metrics   = None
+    st.session_state.meta      = {}
+    st.session_state.criteria  = {}
+    st.session_state.scorecard = None
 
 
 # ── run audit ────────────────────────────────────────────────────────────────
@@ -141,6 +150,19 @@ if run_clicked:
         st.session_state.metrics  = metrics
         st.session_state.meta     = meta
         st.session_state.criteria = criteria
+
+        # optional quality/financial scoring layer
+        st.session_state.scorecard = None
+        try:
+            fin_df = pd.read_csv(financials_path) if financials_path.strip() and Path(financials_path).exists() else None
+            sc_df = pd.read_csv(scores_path) if scores_path.strip() and Path(scores_path).exists() else None
+            if fin_df is not None or sc_df is not None:
+                rubric = load_rubric()
+                st.session_state.scorecard = score_portfolio(
+                    metrics, criteria, rubric, financials=fin_df, scores=sc_df,
+                )
+        except Exception as e:
+            st.warning(f"Quality/financial scoring skipped: {e}")
 
         # refresh PM filter options
         pms = sorted(metrics["project_manager"].dropna().unique().tolist())
@@ -324,50 +346,6 @@ with tab_overview:
         fig_bar.update_traces(marker_line_width=0)
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.markdown("**Budget vs Hours Deviation** (filtered view)")
-    scatter_df = df.copy()
-    scatter_df["budget_dev_pct_disp"] = scatter_df["budget_dev_pct"] * 100
-    scatter_df["hours_dev_pct_disp"]  = scatter_df["hours_dev_pct"]  * 100
-    scatter_df["billing_label"] = scatter_df["billing_type"].str.replace("_", " ").str.title()
-
-    fig_scatter = px.scatter(
-        scatter_df,
-        x="budget_dev_pct_disp",
-        y="hours_dev_pct_disp",
-        color="health_status",
-        color_discrete_map=HEALTH_COLORS,
-        symbol="billing_label",
-        hover_name="project_name",
-        hover_data={
-            "project_id": True,
-            "project_manager": True,
-            "budget_dev_pct_disp": ":.1f",
-            "hours_dev_pct_disp":  ":.1f",
-            "health_status": True,
-            "billing_label": True,
-        },
-        labels={
-            "budget_dev_pct_disp": "Budget Deviation (%)",
-            "hours_dev_pct_disp":  "Hours Deviation (%)",
-            "health_status":       "Health",
-            "billing_label":       "Billing Type",
-        },
-        category_orders={"health_status": HEALTH_ORDER},
-    )
-
-    # add zero lines and threshold bands
-    fig_scatter.add_hline(y=0,  line_dash="dash", line_color="#CBD5E1", line_width=1)
-    fig_scatter.add_vline(x=0,  line_dash="dash", line_color="#CBD5E1", line_width=1)
-    fig_scatter.update_layout(
-        height=380,
-        margin=dict(t=10, b=10, l=0, r=0),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="#FAFBFC",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
-    )
-    fig_scatter.update_xaxes(zeroline=False, gridcolor="#E5E7EB")
-    fig_scatter.update_yaxes(zeroline=False, gridcolor="#E5E7EB")
-    st.plotly_chart(fig_scatter, use_container_width=True)
 
 
 # ── project detail tab ───────────────────────────────────────────────────────
@@ -439,6 +417,29 @@ with tab_table:
 # ── insights tab ─────────────────────────────────────────────────────────────
 
 with tab_insights:
+
+    # ── Quality vs Outcome quadrant (when scoring data is loaded) ────────────
+    scorecard = st.session_state.get("scorecard")
+    if scorecard is not None and not scorecard.empty:
+        st.markdown("**Project Scores — Outcome vs Process (0–10)**")
+        show = scorecard[[c for c in [
+            "project_id", "outcome_score_10", "outcome_metrics_used",
+            "process_score_10", "process_band", "quadrant",
+        ] if c in scorecard.columns]].rename(columns={
+            "project_id": "ID",
+            "outcome_score_10": "Outcome /10",
+            "outcome_metrics_used": "Metrics Used",
+            "process_score_10": "Process /10",
+            "process_band": "Process Band",
+            "quadrant": "Reading",
+        })
+        st.dataframe(show, use_container_width=True, hide_index=True)
+        st.caption(
+            "Outcome: computed from deviations and margin (reliable data only). "
+            "Process: EPM rubric scores rolled up with category weights. "
+            "The Reading column is where the two stories meet."
+        )
+        st.divider()
 
     # ── Tier 1: rule-based findings ──────────────────────────────────────────
     findings = analyse_patterns(st.session_state.metrics, criteria)
@@ -521,35 +522,3 @@ with tab_insights:
                         unsafe_allow_html=True,
                     )
 
-    st.divider()
-
-    # ── Tier 3: Ollama narrative ──────────────────────────────────────────────
-    st.markdown("**AI Narrative Summary** *(requires Ollama running locally)*")
-
-    ollama_host   = st.text_input("Ollama host", value="http://localhost:11434",
-                                   label_visibility="collapsed")
-    available_models = check_ollama(ollama_host)
-
-    if not available_models:
-        st.info(
-            "Ollama is not running or has no models loaded. "
-            "Install Ollama from [ollama.com](https://ollama.com), "
-            "then run `ollama pull llama3` (or any model), and refresh this page.",
-            icon="ℹ️",
-        )
-    else:
-        model_choice = st.selectbox("Model", available_models)
-        if st.button("Generate Executive Summary", type="primary"):
-            with st.spinner(f"Asking {model_choice}…"):
-                narrative = generate_narrative(
-                    findings,
-                    st.session_state.metrics,
-                    model=model_choice,
-                    host=ollama_host,
-                )
-            st.markdown(
-                f'<div style="background:#F8FAFC;border:1px solid #E2E5EA;border-radius:8px;'
-                f'padding:20px 24px;font-size:13px;line-height:1.7;color:#1A1F2E">'
-                f'{narrative}</div>',
-                unsafe_allow_html=True,
-            )
