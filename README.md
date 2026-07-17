@@ -11,30 +11,57 @@ epm-insights is a project audit and analysis system for Engineering Program/Proj
 - **Interactive dashboard** — charts, filters, and a color-coded project table in your browser
 - **Insights** — automated pattern findings (margin exposure, scope growth without change orders, EPM and client concentrations) and a closeout-notes similarity search
 
-## Quick Start (for Engineering Project Managers)
+## Supported Runtime Matrix
 
-You need Python 3.11 or newer installed ([python.org/downloads](https://www.python.org/downloads/) — check "Add Python to PATH" during install).
+- **Supported Python versions:** 3.11, 3.12
+- **Supported operating systems:** Linux, macOS, Windows
+- **Known-good dependency set:** pinned in `/home/runner/work/epm-insights/epm-insights/requirements.txt`
 
-**1. Download this repository** (green "Code" button → Download ZIP, then extract) or clone it:
+## Canonical Bootstrap (clean machine)
 
-```
-git clone https://github.com/meownager/epm-insights.git
-cd epm-insights
-```
+Use this exact setup path for reproducible local runs:
 
-**2. Install the required libraries** (one time only):
+1. Download this repository (green **Code** button → Download ZIP, then extract) or clone it:
 
-```
-python -m pip install -r requirements.txt
-```
+   ```
+   git clone https://github.com/meownager/epm-insights.git
+   cd epm-insights
+   ```
 
-**3. Launch the dashboard:**
+2. Create and activate a virtual environment:
 
-```
-streamlit run dashboard.py
-```
+   **macOS/Linux**
+   ```
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
 
-Your browser opens automatically. Click **Run Audit** in the sidebar — the default paths point to the included synthetic sample data, so you can explore immediately.
+   **Windows (PowerShell)**
+   ```
+   py -3 -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+3. Install pinned dependencies:
+
+   ```
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   ```
+
+4. Verify the environment:
+
+   ```
+   python -m pytest tests/ -v
+   ```
+
+5. Launch the dashboard:
+
+   ```
+   streamlit run dashboard.py
+   ```
+
+Your browser opens automatically. Click **Run Audit** in the sidebar — default paths point to included synthetic sample data.
 
 ## Using Your Own (Real) Project Data
 
@@ -52,6 +79,12 @@ All processing happens on your machine. Nothing is transmitted anywhere.
 python scripts/completed_project_health.py --proposal data/sample/proposal_projects.csv --actual data/sample/actual_projects.csv --output-dir outputs
 
 python scripts/generate_html_report.py --detail outputs/completed_project_health_detail.csv --run-record "outputs/runs/run_*.json" --output outputs/audit_report.html
+```
+
+You can print startup/runtime diagnostics without running an audit:
+
+```
+python scripts/completed_project_health.py --proposal data/sample/proposal_projects.csv --actual data/sample/actual_projects.csv --diagnostics-only
 ```
 
 ## How Health Is Classified
@@ -77,6 +110,20 @@ python -m pytest tests/ -v
 ```
 
 Every deviation formula and classification boundary has a known-answer test.
+
+## Optional Local AI Features (not required)
+
+- Core audit metrics, thresholds, and health classifications are fully local and deterministic without AI.
+- Optional narrative generation depends on a locally running Ollama service (`http://localhost:11434`) and an installed model.
+- If Ollama is not installed or running, only the optional narrative layer is unavailable; core audit outputs still run normally.
+
+## Reproducibility Bundle
+
+Generate a repeatable sample bundle with pinned dependencies, run artifacts, and SHA-256 fingerprints:
+
+```
+python scripts/build_repro_bundle.py --output-dir outputs/repro
+```
 
 ## Project Principles
 

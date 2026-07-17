@@ -6,6 +6,11 @@ from typing import Any
 
 import pandas as pd
 
+OLLAMA_OPTIONAL_NOTE = (
+    "Optional local AI feature: install and run Ollama locally, then select a model. "
+    "Core audit metrics and health classifications do not depend on Ollama."
+)
+
 
 @dataclass
 class Finding:
@@ -216,6 +221,7 @@ def search_notes(query: str, index: NotesIndex, metrics: pd.DataFrame,
 
 
 def check_ollama(host: str = "http://localhost:11434") -> list[str]:
+    """Return locally available Ollama models, or empty list when unavailable."""
     try:
         import requests
         r = requests.get(f"{host}/api/tags", timeout=2)
@@ -231,7 +237,7 @@ def generate_narrative(findings: list[Finding], metrics: pd.DataFrame,
     try:
         import requests
     except ImportError:
-        return "requests library not available."
+        return f"requests library not available. {OLLAMA_OPTIONAL_NOTE}"
 
     summary_lines = [f"- [{f.severity.upper()}] {f.title}: {f.body}" for f in findings]
     project_lines = []
@@ -268,6 +274,6 @@ def generate_narrative(findings: list[Finding], metrics: pd.DataFrame,
                           timeout=60)
         if r.status_code == 200:
             return r.json().get("response", "No response from model.").strip()
-        return f"Ollama returned status {r.status_code}."
+        return f"Ollama returned status {r.status_code}. {OLLAMA_OPTIONAL_NOTE}"
     except Exception as e:
-        return f"Could not reach Ollama: {e}"
+        return f"Could not reach Ollama: {e}. {OLLAMA_OPTIONAL_NOTE}"

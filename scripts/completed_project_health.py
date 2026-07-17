@@ -11,7 +11,10 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import json
+import platform
+import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -39,6 +42,18 @@ REQUIRED_ACTUAL_COLUMNS = {
 }
 
 DEFAULT_CRITERIA_PATH = Path(__file__).parent.parent / "config" / "audit_criteria.yaml"
+MIN_SUPPORTED_PYTHON = (3, 11)
+SUPPORTED_PLATFORMS = {"Linux", "Darwin", "Windows"}
+RUNTIME_DEPENDENCIES = [
+    "pandas",
+    "PyYAML",
+    "streamlit",
+    "plotly",
+    "scikit-learn",
+    "requests",
+    "xlrd",
+    "openpyxl",
+]
 
 
 def sha256_file(path: Path) -> str:
@@ -102,7 +117,51 @@ def parse_args() -> argparse.Namespace:
         default=str(DEFAULT_CRITERIA_PATH),
         help="Path to audit_criteria.yaml (Audit Criteria Register)",
     )
+    parser.add_argument(
+        "--diagnostics-only",
+        action="store_true",
+        help="Print runtime diagnostics and exit",
+    )
     return parser.parse_args()
+
+
+def collect_runtime_diagnostics(
+    min_python: tuple[int, int] = MIN_SUPPORTED_PYTHON,
+    supported_platforms: set[str] | None = None,
+    dependencies: list[str] | None = None,
+) -> list[str]:
+    if supported_platforms is None:
+        supported_platforms = SUPPORTED_PLATFORMS
+    if dependencies is None:
+        dependencies = RUNTIME_DEPENDENCIES
+
+    messages: list[str] = []
+    if sys.version_info < min_python:
+        messages.append(
+            f"ERROR: Python {min_python[0]}.{min_python[1]}+ required, found "
+            f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}."
+        )
+    else:
+        messages.append(
+            f"OK: Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}."
+        )
+
+    current_platform = platform.system()
+    if current_platform not in supported_platforms:
+        messages.append(
+            f"WARNING: Platform '{current_platform}' is outside supported matrix "
+            f"{sorted(supported_platforms)}."
+        )
+    else:
+        messages.append(f"OK: Platform '{current_platform}'.")
+
+    for dep in dependencies:
+        try:
+            ver = importlib.metadata.version(dep)
+            messages.append(f"OK: {dep}=={ver}")
+        except importlib.metadata.PackageNotFoundError:
+            messages.append(f"ERROR: Missing dependency '{dep}'.")
+    return messages
 
 
 def validate_columns(df: pd.DataFrame, required: set[str], label: str) -> None:
@@ -245,6 +304,14 @@ def compute_metrics(
 
 def main() -> None:
     args = parse_args()
+    diagnostics = collect_runtime_diagnostics()
+    print("Runtime diagnostics:")
+    for msg in diagnostics:
+        print(f"- {msg}")
+
+    if args.diagnostics_only:
+        return
+
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
