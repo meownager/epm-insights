@@ -1,166 +1,128 @@
-# Quality Rubric Register
-# Digitized from the company Project Audit Form. Same discipline as the
-# Audit Criteria Register: every change increments version with a reason.
-# Category scores are 1-4 against the written anchors. Weights control how
-# much each category counts in the 0-10 Process Quality rollup.
-# A blank / "na" score excludes the category from both sides of the rollup.
-
-version: "1.0.0"
-effective_date: "2026-07-16"
-change_reason: "Initial digitization of the company audit form rubric with weight tiers."
-
-# Weight tiers: critical = 3, core = 2, standard = 1
+version: 1.1.0
+effective_date: '2026-07-16'
+change_reason: Remove Celebration from the audit entirely per audit owner decision; it no longer appears on forms
+  or in any score.
 categories:
-  - name: Project Folder Structure
-    weight: 1
-    anchors:
-      1: Folders not present in Sharepoint
-      2: Folders present in Sharepoint
-      3: Folders present with Document
-      4: Document(s) and all have context
-
-  - name: Cutsheet
-    weight: 2
-    anchors:
-      1: No cutsheet
-      2: Cut sheet very generic, old rates
-      3: Reasonable scope and details
-      4: Project is very well laid out and great bridge from RFQ to Proposal
-
-  - name: Proposal
-    weight: 2
-    anchors:
-      1: No proposal for reference
-      2: Proposal available, does not match cutsheet
-      3: Matches cutsheet
-      4: Over the top presentation and delivery
-
-  - name: Estimate
-    weight: 3
-    anchors:
-      1: No Estimate in QB
-      2: Estimate does not match PO/CO
-      3: Estimate matches PO and broke out to best fit proposal
-      4: Estimate is able to be directly turned into invoice without much manual QB effort
-
-  - name: Apex
-    weight: 2
-    anchors:
-      1: Not visible in Apex
-      2: Scope does not match PO or Proposal
-      3: Dashboard is useful to track project
-      4: Apex matches QB status and Project Milestones are used to manage project and schedule resources
-
-  - name: Internal Kickoff
-    weight: 2
-    anchors:
-      1: No document exists
-      2: Document with little valuable data
-      3: Functional kick off with Project lead identified with Attendance list
-      4: SWOT or similar predicted unforeseens to be addressed at customer kickoff
-
-  - name: Customer Kickoff
-    weight: 2
-    anchors:
-      1: Never scheduled
-      2: Trail of attempted scheduling but customer did not make time
-      3: Customer kickoff document exists
-      4: Evidence customer kickoff brought forth scope clarifications and company concerns addressed
-
-  - name: Initial Schedule
-    weight: 2
-    anchors:
-      1: No schedule exists
-      2: A schedule template is in folder
-      3: Initial schedule is reviewed and signed off by customer
-      4: Schedule is updated in Apex with Milestones
-
-  - name: Design Signoff
-    weight: 2
-    anchors:
-      1: Does not exist
-      2: Design submittal exists
-      3: Design verbally approved
-      4: Design signed off with engaging conversation with customer and change history
-
-  - name: BoM
-    weight: 2
-    anchors:
-      1: Does not exist
-      2: BoM template rough
-      3: BoM well put together and signed off by customer
-      4: BoM updated and delivered at end of project
-
-  - name: C/Os
-    weight: 3
-    anchors:
-      1: Does not exist
-      2: C/O received but Estimate not updated
-      3: Estimate updated accordingly
-      4: Estimate updated and able to be turned directly into invoices without much manual QB effort
-
-  - name: Customer Closeout
-    weight: 2
-    anchors:
-      1: Never scheduled
-      2: Document with little valuable data
-      3: Functional closeout with Project lead and Attendance list
-      4: AAR executed with customer with changes to be rolled into company systems
-
-  - name: AAR / Internal Closeout
-    weight: 2
-    anchors:
-      1: Never scheduled
-      2: Document with little valuable data
-      3: Functional closeout with Project lead and Attendance list
-      4: AAR executed with Leadership with changes to be rolled into company systems
-
-  - name: Financial Closeout
-    weight: 3
-    anchors:
-      1: Lingers to death
-      2: Closed after final payment
-      3: Project team escalates Final payment
-      4: Project has financial post mortem for leadership
-
-  - name: Job Status
-    weight: 3
-    anchors:
-      1: QB/Apex/SP status do not match
-      2: Status same across systems
-      3: Status is accurate and reasons are noted
-      4: Project Lead is actively attempting to close an open project / Closed project has checked all prior boxes
-
-  - name: Closeout sent to customer
-    weight: 1
-    anchors:
-      1: No evidence
-      2: Email sent
-      3: Follow up conversation regarding next moves
-      4: Evidence of customer satisfaction throughout process and appreciates communication from Team
-
-  - name: Celebration
-    weight: 1
-    anchors:
-      1: Does not exist
-      2: Accolades given where due at weekly review
-      3: Announcement with gift cards distributed
-      4: Team outing scheduled
-
-# Process Quality bands on the 0-10 rollup
+- name: Project Folder Structure
+  weight: 1
+  anchors:
+    1: Folders not present in Sharepoint
+    2: Folders present in Sharepoint
+    3: Folders present with Document
+    4: Document(s) and all have context
+- name: Cutsheet
+  weight: 2
+  anchors:
+    1: No cutsheet
+    2: Cut sheet very generic, old rates
+    3: Reasonable scope and details
+    4: Project is very well laid out and great bridge from RFQ to Proposal
+- name: Proposal
+  weight: 2
+  anchors:
+    1: No proposal for reference
+    2: Proposal available, does not match cutsheet
+    3: Matches cutsheet
+    4: Over the top presentation and delivery
+- name: Estimate
+  weight: 3
+  anchors:
+    1: No Estimate in QB
+    2: Estimate does not match PO/CO
+    3: Estimate matches PO and broke out to best fit proposal
+    4: Estimate is able to be directly turned into invoice without much manual QB effort
+- name: Apex
+  weight: 2
+  anchors:
+    1: Not visible in Apex
+    2: Scope does not match PO or Proposal
+    3: Dashboard is useful to track project
+    4: Apex matches QB status and Project Milestones are used to manage project and schedule resources
+- name: Internal Kickoff
+  weight: 2
+  anchors:
+    1: No document exists
+    2: Document with little valuable data
+    3: Functional kick off with Project lead identified with Attendance list
+    4: SWOT or similar predicted unforeseens to be addressed at customer kickoff
+- name: Customer Kickoff
+  weight: 2
+  anchors:
+    1: Never scheduled
+    2: Trail of attempted scheduling but customer did not make time
+    3: Customer kickoff document exists
+    4: Evidence customer kickoff brought forth scope clarifications and company concerns addressed
+- name: Initial Schedule
+  weight: 2
+  anchors:
+    1: No schedule exists
+    2: A schedule template is in folder
+    3: Initial schedule is reviewed and signed off by customer
+    4: Schedule is updated in Apex with Milestones
+- name: Design Signoff
+  weight: 2
+  anchors:
+    1: Does not exist
+    2: Design submittal exists
+    3: Design verbally approved
+    4: Design signed off with engaging conversation with customer and change history
+- name: BoM
+  weight: 2
+  anchors:
+    1: Does not exist
+    2: BoM template rough
+    3: BoM well put together and signed off by customer
+    4: BoM updated and delivered at end of project
+- name: C/Os
+  weight: 3
+  anchors:
+    1: Does not exist
+    2: C/O received but Estimate not updated
+    3: Estimate updated accordingly
+    4: Estimate updated and able to be turned directly into invoices without much manual QB effort
+- name: Customer Closeout
+  weight: 2
+  anchors:
+    1: Never scheduled
+    2: Document with little valuable data
+    3: Functional closeout with Project lead and Attendance list
+    4: AAR executed with customer with changes to be rolled into company systems
+- name: AAR / Internal Closeout
+  weight: 2
+  anchors:
+    1: Never scheduled
+    2: Document with little valuable data
+    3: Functional closeout with Project lead and Attendance list
+    4: AAR executed with Leadership with changes to be rolled into company systems
+- name: Financial Closeout
+  weight: 3
+  anchors:
+    1: Lingers to death
+    2: Closed after final payment
+    3: Project team escalates Final payment
+    4: Project has financial post mortem for leadership
+- name: Job Status
+  weight: 3
+  anchors:
+    1: QB/Apex/SP status do not match
+    2: Status same across systems
+    3: Status is accurate and reasons are noted
+    4: Project Lead is actively attempting to close an open project / Closed project has checked all prior boxes
+- name: Closeout sent to customer
+  weight: 1
+  anchors:
+    1: No evidence
+    2: Email sent
+    3: Follow up conversation regarding next moves
+    4: Evidence of customer satisfaction throughout process and appreciates communication from Team
 bands:
-  strong: 8.5      # >= 8.5 → Strong
-  adequate: 7.0    # >= 7.0 → Adequate; below → Needs Improvement
-
-# Outcome Performance (0-10) computed from audit engine metrics.
-# Each metric scores 1.0 within Green threshold, 0.5 within Yellow, 0 beyond,
-# then the weighted average is scaled to 10.
+  strong: 8.5
+  adequate: 7.0
 outcome_score:
   weights:
     budget: 3
     hours: 2
     schedule: 2
     margin: 3
-  # margin metric: actual margin vs planned margin erosion, percentage points
-  margin_erosion_green_max: 0.05   # <= 5 pts lost → full credit
-  margin_erosion_yellow_max: 0.15  # <= 15 pts lost → half credit
+  margin_erosion_green_max: 0.05
+  margin_erosion_yellow_max: 0.15

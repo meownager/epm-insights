@@ -52,21 +52,27 @@ def test_all_ones_scores_two_point_five():
     assert res["process_band"].iloc[0] == "Needs Improvement"
 
 
+def test_celebration_removed_from_rubric():
+    names = [c["name"] for c in RUBRIC["categories"]]
+    assert "Celebration" not in names
+    assert len(names) == 16
+
+
 def test_na_excluded_from_rollup():
-    # all 4s except Celebration = na → still a perfect 10
-    rows = [["P1", c["name"], "na" if c["name"] == "Celebration" else 4, ""]
+    # all 4s except one category marked na → still a perfect 10
+    rows = [["P1", c["name"], "na" if c["name"] == "BoM" else 4, ""]
             for c in RUBRIC["categories"]]
     res = process_quality_score(_scores(rows), RUBRIC)
     assert res["process_score_10"].iloc[0] == 10.0
     assert res["categories_na"].iloc[0] == 1
-    assert res["categories_scored"].iloc[0] == 16
+    assert res["categories_scored"].iloc[0] == 15
 
 
 def test_weights_matter():
     # 4 on a critical (weight 3) category and 1 on a standard (weight 1) category
     # → weighted better than the reverse
-    high_crit = _scores([["P1", "Estimate", 4, ""], ["P1", "Celebration", 1, ""]])
-    low_crit = _scores([["P1", "Estimate", 1, ""], ["P1", "Celebration", 4, ""]])
+    high_crit = _scores([["P1", "Estimate", 4, ""], ["P1", "Closeout sent to customer", 1, ""]])
+    low_crit = _scores([["P1", "Estimate", 1, ""], ["P1", "Closeout sent to customer", 4, ""]])
     hi = process_quality_score(high_crit, RUBRIC)["process_score_10"].iloc[0]
     lo = process_quality_score(low_crit, RUBRIC)["process_score_10"].iloc[0]
     assert hi > lo
