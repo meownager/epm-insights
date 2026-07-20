@@ -7,9 +7,11 @@ Run with:
 
 from __future__ import annotations
 
+import io
 import json
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 import pandas as pd
@@ -22,6 +24,7 @@ from burn_timeline import compute_burn_series, first_crossing_dates
 from completed_project_health import compute_metrics, get_billing_thresholds, load_criteria, write_run_record
 from convert_ies import convert as convert_ies_exports
 from generate_html_report import build_report
+from generate_audit_form import build_form, build_project_dict
 from insights import analyse_patterns, build_notes_index, search_notes
 from portfolio_store import delete_projects as store_delete
 from portfolio_store import load_store, upsert as store_upsert
@@ -365,19 +368,73 @@ df = df[
 
 # ── header ───────────────────────────────────────────────────────────────────
 
-col_title, col_dl = st.columns([4, 1])
+def _build_audit_form_bytes(project_id: str) -> bytes | None:
+    """Build one project's editable Excel audit form (in memory, no temp files)."""
+    fin_df = st.session_state.get("ies_financials")
+    if fin_df is None or fin_df.empty or project_id not in set(fin_df["project_id"]):
+        return None
+    fin_row = fin_df[fin_df["project_id"] == project_id].iloc[0].to_dict()
+    metrics_rows = st.session_state.metrics[st.session_state.metrics["project_id"] == project_id]
+    metrics_row = metrics_rows.iloc[0].to_dict() if not metrics_rows.empty else None
+    project = build_project_dict(fin_row, metrics_row)
+    rubric = load_rubric()
+    buf = io.BytesIO()
+    build_form(project, rubric, buf)
+    return buf.getvalue()
+
+
+col_title, col_dl, col_forms = st.columns([3, 1, 1.3])
 with col_title:
     st.markdown("# Completed Project Health")
 
 with col_dl:
     html_bytes = build_report(st.session_state.metrics, meta).encode("utf-8")
     st.download_button(
-        "⬇ Download Report",
+        "⬇ Summary Report",
         data=html_bytes,
         file_name="audit_report.html",
         mime="text/html",
         use_container_width=True,
     )
+
+with col_forms:
+    fin_available = st.session_state.get("ies_financials")
+    fin_available = fin_available is not None and not fin_available.empty
+    if not fin_available:
+        st.button(
+            "⬇ Audit Form(s)", disabled=True, use_container_width=True,
+            help="Editable Excel audit forms need financial data from an IES upload — "
+                 "not available for the Advanced/CSV path.",
+        )
+    else:
+        display_ids = df["project_id"].tolist()
+        if len(display_ids) == 1:
+            form_bytes = _build_audit_form_bytes(display_ids[0])
+            st.download_button(
+                "⬇ Audit Form (.xlsx)",
+                data=form_bytes if form_bytes else b"",
+                file_name=f"audit_form_{display_ids[0]}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                disabled=form_bytes is None,
+                use_container_width=True,
+            )
+        else:
+            zip_buf = io.BytesIO()
+            written = 0
+            with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                for pid in display_ids:
+                    form_bytes = _build_audit_form_bytes(pid)
+                    if form_bytes:
+                        zf.writestr(f"audit_form_{pid}.xlsx", form_bytes)
+                        written += 1
+            st.download_button(
+                f"⬇ Audit Forms (.zip, {written})",
+                data=zip_buf.getvalue(),
+                file_name="audit_forms.zip",
+                mime="application/zip",
+                disabled=written == 0,
+                use_container_width=True,
+            )
 
 # meta strip
 run_id   = meta.get("run_id", "—")[:8]
@@ -402,8 +459,7 @@ if st.session_state.get("no_schedule_baseline"):
         "**Schedule not measured for these projects.** IES exports contain actual "
         "work and billing dates, but no committed/proposed delivery date — so schedule "
         "deviation cannot be computed. Health status below reflects budget and hours "
-        "only for projects converted this way. Client, PM, and project name were also "
-        "not found in the IES data and are shown blank.",
+        "only for projects converted this way.",
         icon="ℹ️",
     )
 
@@ -490,25 +546,32 @@ with tab_overview:
         st.plotly_chart(fig_donut, use_container_width=True)
 
     with ch2:
-        st.markdown("**Health by Project Manager**")
-        pm_display = all_df.copy()
-        pm_display["project_manager"] = (
-            pm_display["project_manager"].fillna("").astype(str).str.strip()
-            .replace("", "Unassigned")
-        )
+        known_pm_mask = all_df["project_manager"].astype(str).str.strip().replace("nan", "").ne("")
+        has_pm_data = known_pm_mask.any()
+
+        if has_pm_data:
+            st.markdown("**Health by Project Manager**")
+            pm_display = all_df[known_pm_mask].copy()
+            group_col, x_label = "project_manager", "Project Manager"
+        else:
+            st.markdown("**Health by Billing Type**")
+            pm_display = all_df.copy()
+            group_col, x_label = "billing_type", "Billing Type"
+            pm_display[group_col] = pm_display[group_col].str.replace("_", " ").str.title()
+
         pm_health = (
-            pm_display.groupby(["project_manager", "health_status"])
+            pm_display.groupby([group_col, "health_status"])
             .size()
             .reset_index(name="count")
         )
         fig_bar = px.bar(
             pm_health,
-            x="project_manager",
+            x=group_col,
             y="count",
             color="health_status",
             color_discrete_map=HEALTH_COLORS,
             category_orders={"health_status": HEALTH_ORDER},
-            labels={"project_manager": "Project Manager",
+            labels={group_col: x_label,
                     "count": "Projects", "health_status": "Health"},
             barmode="stack",
         )
@@ -518,7 +581,7 @@ with tab_overview:
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
-            xaxis=dict(tickangle=-20),
+            xaxis=dict(tickangle=-20 if has_pm_data else 0),
         )
         fig_bar.update_traces(marker_line_width=0)
         st.plotly_chart(fig_bar, use_container_width=True)

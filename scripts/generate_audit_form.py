@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import BinaryIO
 
 import pandas as pd
 import yaml
@@ -64,7 +65,29 @@ def _add_table(ws, display_name: str, ref: str, column_names: list[str]) -> None
     ws.add_table(tbl)
 
 
-def build_form(project: dict, rubric: dict, out_path: Path) -> None:
+def build_project_dict(financials_row: dict, metrics_row: dict | None = None) -> dict:
+    """Combine a project_financials.csv row with the matching audit-metrics
+    row (project name / client / PM, when available) into the dict build_form
+    expects, including the derived Cost figure used for the Profit % formula.
+    Used by both the CLI and the dashboard's download button, so the two
+    stay identical.
+    """
+    project = dict(financials_row)
+    ext = pd.to_numeric(financials_row.get("external_cost_bills"), errors="coerce") or 0
+    exp = pd.to_numeric(financials_row.get("external_cost_expenses"), errors="coerce") or 0
+    internal = pd.to_numeric(financials_row.get("internal_labor_cost"), errors="coerce")
+    project["cost"] = round((internal if pd.notna(internal) else 0) + ext + exp, 2)
+    project["revenue"] = financials_row.get("revenue_invoiced", "")
+
+    if metrics_row:
+        for key in ("project_name", "client", "project_manager"):
+            val = metrics_row.get(key)
+            if val is not None and str(val).strip().lower() not in ("", "nan"):
+                project[key] = val
+    return project
+
+
+def build_form(project: dict, rubric: dict, out: Path | BinaryIO) -> None:
     wb = Workbook()
     ws = wb.active
     ws.title = "Audit Form"
@@ -191,8 +214,9 @@ def build_form(project: dict, rubric: dict, out_path: Path) -> None:
     _add_table(ws, "AutoFilled", f"A{autofill_header_row}:B{r - 1}",
                ["AUTO-FILLED FROM AUDIT DATA", "Value"])
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    wb.save(out_path)
+    if isinstance(out, Path):
+        out.parent.mkdir(parents=True, exist_ok=True)
+    wb.save(out)
 
 
 def main() -> None:
@@ -207,13 +231,7 @@ def main() -> None:
     out_dir = Path(args.output_dir)
 
     for _, row in fin.iterrows():
-        project = row.to_dict()
-        # cost = planned internal+external actuals where known
-        ext = pd.to_numeric(row.get("external_cost_bills"), errors="coerce") or 0
-        exp = pd.to_numeric(row.get("external_cost_expenses"), errors="coerce") or 0
-        internal = pd.to_numeric(row.get("internal_labor_cost"), errors="coerce")
-        project["cost"] = round((internal if pd.notna(internal) else 0) + ext + exp, 2)
-        project["revenue"] = row.get("revenue_invoiced", "")
+        project = build_project_dict(row.to_dict())
         out = out_dir / f"audit_form_{row['project_id']}.xlsx"
         build_form(project, rubric, out)
         print(f"wrote {out}")
