@@ -149,6 +149,118 @@ def test_transactions_time_charge_total(t_and_e_project):
     assert tx["time_charge_total"] == 15000
 
 
+# ── bill deduplication ───────────────────────────────────────────────────────
+
+def test_bill_dedup_drops_open_when_paid_sibling_exists(tmp_path):
+    write_transactions(tmp_path / "90004_Transactions.csv", [
+        ["06/01/2026", "Bill", "B-1", "Vendor A", "", 1000, "paid"],
+        ["06/01/2026", "Bill", "B-1-dup", "Vendor A", "", 1000, "open"],
+        ["05/01/2026", "Estimate", "2026-004", "90004-F - Widget", "", 5000, "applied"],
+    ])
+    tx = parse_transactions(tmp_path / "90004_Transactions.csv")
+    assert tx["bills_total"] == 1000          # only the paid copy counted
+    assert tx["bills_total_raw"] == 2000       # both copies visible in the raw total
+    assert tx["duplicates_dropped_count"] == 1
+    assert tx["duplicates_dropped_dollars"] == 1000
+
+
+def test_bill_dedup_keeps_distinct_bills_same_day(tmp_path):
+    write_transactions(tmp_path / "90004_Transactions.csv", [
+        ["06/01/2026", "Bill", "B-1", "Vendor A", "", 1000, "paid"],
+        ["06/01/2026", "Bill", "B-2", "Vendor B", "", 1500, "paid"],
+    ])
+    tx = parse_transactions(tmp_path / "90004_Transactions.csv")
+    assert tx["bills_total"] == 2500
+    assert tx["duplicates_dropped_count"] == 0
+
+
+def test_bill_dedup_no_false_positive_when_only_open(tmp_path):
+    # a genuinely unpaid bill with no paid sibling must NOT be dropped
+    write_transactions(tmp_path / "90004_Transactions.csv", [
+        ["06/01/2026", "Bill", "B-1", "Vendor A", "", 1000, "open"],
+    ])
+    tx = parse_transactions(tmp_path / "90004_Transactions.csv")
+    assert tx["bills_total"] == 1000
+    assert tx["duplicates_dropped_count"] == 0
+
+
+def test_bill_dedup_only_drops_the_open_copy_not_both(tmp_path):
+    write_transactions(tmp_path / "90004_Transactions.csv", [
+        ["06/01/2026", "Bill", "B-1", "Vendor A", "", 1000, "paid"],
+        ["06/01/2026", "Bill", "B-1-dup", "Vendor A", "", 1000, "open"],
+    ])
+    tx = parse_transactions(tmp_path / "90004_Transactions.csv")
+    # the paid copy must survive — only the open duplicate is dropped
+    assert tx["bills_total"] == 1000
+    assert tx["bills_total_raw"] == 2000
+
+
+# ── change orders as a standalone Transaction row type ──────────────────────
+
+def test_txn_change_order_row_detected(tmp_path):
+    write_transactions(tmp_path / "90005_Transactions.csv", [
+        ["06/01/2026", "Change Order", "CO-1", "90005-F - Widget", "", 5000, "accepted"],
+        ["05/01/2026", "Estimate", "2026-005", "90005-F - Widget", "", 20000, "applied"],
+    ])
+    tx = parse_transactions(tmp_path / "90005_Transactions.csv")
+    assert tx["txn_co_count"] == 1
+    assert tx["txn_co_total"] == 5000
+
+
+def test_convert_adds_transaction_only_co_to_budget(tmp_path, tmp_path_factory):
+    """Estimate sheet has no embedded CO lines, but Transactions shows a
+    standalone Change Order row — the effective budget must include it."""
+    write_estimate(tmp_path / "90005_Estimate.csv", [
+        ["", "Team Blue:Engineer", "Line 1: Widget", 100, 100.00, 10000.00, 200.00, 20000.00, 20000.00, 0.00, "", "Automation"],
+    ])
+    write_transactions(tmp_path / "90005_Transactions.csv", [
+        ["06/01/2026", "Change Order", "CO-1", "90005-F - Widget", "", 5000, "accepted"],
+        ["05/01/2026", "Estimate", "2026-005", "90005-F - Widget", "", 20000, "applied"],
+        ["06/15/2026", "Invoice", "300001", "90005-F - Widget", "", 25000, "paid"],
+    ])
+    out = tmp_path_factory.mktemp("out")
+    convert(tmp_path, out)
+    fin = pd.read_csv(out / "project_financials.csv")
+    row = fin[fin["project_id"] == "90005-F"].iloc[0]
+    assert row["estimate_total"] == 25000   # 20000 base + 5000 transaction-only CO
+    assert row["co_source"] == "transactions"
+    assert row["co_count"] == 1
+
+
+def test_convert_does_not_double_count_when_both_sources_show_cos(tmp_path, tmp_path_factory):
+    """Estimate sheet ALREADY has an embedded CO line, and Transactions ALSO
+    shows a standalone Change Order row — with no reliable way to confirm
+    they're not the same CO, the budget must not silently add both."""
+    write_estimate(tmp_path / "90006_Estimate.csv", [
+        ["", "Team Blue:Engineer", "Line 1: Widget", 100, 100.00, 10000.00, 200.00, 20000.00, 20000.00, 0.00, "", "Automation"],
+        ["", "Team Blue:Engineer", "Additional Work CO #1", 10, 100.00, 1000.00, 200.00, 2000.00, 2000.00, 0.00, "", "Automation"],
+    ])
+    write_transactions(tmp_path / "90006_Transactions.csv", [
+        ["06/01/2026", "Change Order", "CO-1", "90006-F - Widget", "", 2000, "accepted"],
+        ["05/01/2026", "Estimate", "2026-006", "90006-F - Widget", "", 22000, "applied"],
+    ])
+    out = tmp_path_factory.mktemp("out")
+    convert(tmp_path, out)
+    fin = pd.read_csv(out / "project_financials.csv")
+    row = fin[fin["project_id"] == "90006-F"].iloc[0]
+    assert row["estimate_total"] == 22000   # NOT 24000 — avoids the possible double-count
+    assert row["co_source"] == "both_unreconciled"
+
+
+def test_convert_co_source_estimate_when_only_embedded(fixed_fee_project, tmp_path_factory):
+    out = tmp_path_factory.mktemp("out")
+    convert(fixed_fee_project, out)
+    fin = pd.read_csv(out / "project_financials.csv")
+    assert fin["co_source"].iloc[0] == "estimate"  # fixture has one embedded CO line
+
+
+def test_convert_co_source_none_when_no_change_orders(t_and_e_project, tmp_path_factory):
+    out = tmp_path_factory.mktemp("out")
+    convert(t_and_e_project, out)
+    fin = pd.read_csv(out / "project_financials.csv")
+    assert fin["co_source"].iloc[0] == "none"  # fixture has no COs anywhere
+
+
 def test_ragged_csv_transactions_does_not_crash(tmp_path):
     """Regression: a literal raw CSV export (1-field status line, 7-field
     data rows) must not raise a pandas tokenizing error. The .xls path pads
