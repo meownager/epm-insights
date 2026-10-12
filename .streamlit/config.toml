@@ -1,0 +1,12 @@
+# Local dashboard configuration. Committed to git — it's just settings,
+# never data (real project data always stays in data/real/, which is
+# git-ignored separately).
+
+[server]
+# Company timesheet exports can run several megabytes for a multi-year,
+# whole-company pull. Default Streamlit limit is 200MB, which is already
+# enough — this raises it further so a large export is never the blocker.
+maxUploadSize = 1024
+
+[theme]
+base = "light"
