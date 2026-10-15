@@ -38,7 +38,7 @@ def load_store(store_dir: Path) -> dict[str, pd.DataFrame]:
         out[key] = pd.read_csv(path) if path.exists() else _empty(key)
     return out
 
-
+### this needs to be changed accroding to the discussion on 10/06
 def _upsert_by_project_id(existing: pd.DataFrame, new: pd.DataFrame) -> pd.DataFrame:
     if new is None or new.empty:
         return existing

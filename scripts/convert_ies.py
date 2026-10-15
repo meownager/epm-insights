@@ -215,6 +215,30 @@ def parse_transactions(path: Path) -> dict:
     exp = df[df["type"] == "Expense"]
     po = df[df["type"] == "Purchase Order"]
     est_rows = df[df["type"] == "Estimate"]
+    # Some IES exports carry change orders as their own Transaction row
+    # (Type = "Change Order"), separate from the pattern seen in every
+    # completed project reviewed so far, where COs show up as extra lines
+    # *inside* the Estimate sheet. Both patterns are real — captured here,
+    # separately, so convert() can decide how to combine them without
+    # risking double-counting against what the Estimate sheet already shows.
+    txn_co_rows = df[df["type"] == "Change Order"]
+
+    # ---- Bill deduplication ----
+    # IES sometimes lists the same bill twice — once when opened ("open"),
+    # again once paid ("paid") — with identical date and amount. Blindly
+    # summing every Bill row double-counts these. Drop the "open" copy only
+    # when a "paid" sibling exists at the same (date, amount); track exactly
+    # what was dropped so nothing is silently discarded.
+    bills = bills.copy()
+    bills["_key"] = bills["date"].astype(str) + "|" + bills["amount"].round(4).astype(str)
+    dup_mask = pd.Series(False, index=bills.index)
+    for _key, grp in bills.groupby("_key"):
+        statuses = set(grp["status"])
+        if "paid" in statuses and "open" in statuses:
+            dup_mask.loc[grp[grp["status"] == "open"].index] = True
+    bills_deduped = bills[~dup_mask]
+    duplicates_dropped_count = int(dup_mask.sum())
+    duplicates_dropped_dollars = float(bills.loc[dup_mask, "amount"].sum())
 
     # dated revenue events, for the budget-burn timeline chart — invoices and
     # credit memos only (what the client was actually billed, over time)
@@ -239,9 +263,14 @@ def parse_transactions(path: Path) -> dict:
         "overdue_invoice_total": float(inv.loc[inv["status"] == "overdue", "amount"].sum()),
         "time_charge_total": float(tc["amount"].sum()),
         "time_charge_open_total": float(tc.loc[tc["status"] == "open", "amount"].sum()),
-        "bills_total": float(bills["amount"].sum()),
+        "bills_total": float(bills_deduped["amount"].sum()),
+        "bills_total_raw": float(bills["amount"].sum()),
+        "duplicates_dropped_count": duplicates_dropped_count,
+        "duplicates_dropped_dollars": duplicates_dropped_dollars,
         "expenses_total": float(exp["amount"].sum()),
         "po_total": float(po["amount"].sum()),
+        "txn_co_total": float(txn_co_rows["amount"].sum()),
+        "txn_co_count": int(len(txn_co_rows)),
         "first_activity_date": df["date"].min(),
         "last_activity_date": df["date"].max(),
     }
@@ -434,10 +463,32 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
         if not ledger.empty:
             ledgers.append(ledger)
 
+        # Reconcile change orders from two possible sources: embedded as extra
+        # lines in the Estimate sheet (the pattern in every completed project
+        # reviewed so far), or as standalone "Change Order" rows in the
+        # Transactions sheet (seen in at least one active-project reference).
+        # If only the Transactions sheet shows COs, the Estimate snapshot is
+        # stale — add them to the effective budget. If BOTH sources show COs,
+        # there's no reliable key to confirm they're not the same ones, so
+        # nothing is added (avoiding a possible double-count) and it's
+        # flagged for manual review instead of guessed at.
+        if est["co_count"] == 0 and tx["txn_co_count"] > 0:
+            effective_budget = est["client_total"] + tx["txn_co_total"]
+            co_source = "transactions"
+        elif est["co_count"] > 0 and tx["txn_co_count"] > 0:
+            effective_budget = est["client_total"]
+            co_source = "both_unreconciled"
+        elif est["co_count"] > 0:
+            effective_budget = est["client_total"]
+            co_source = "estimate"
+        else:
+            effective_budget = est["client_total"]
+            co_source = "none"
+
         planned_cost = est["labor_cost"] + est["materials_cost"] + est["contracted_cost"]
         planned_margin_pct = (
-            (est["client_total"] - planned_cost) / est["client_total"]
-            if est["client_total"] else None
+            (effective_budget - planned_cost) / effective_budget
+            if effective_budget else None
         )
         # actual cost: external (bills+expenses) + internal labor when logged hours exist
         internal_cost = None
@@ -466,7 +517,7 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
         proposals.append({
             "project_id": code,
             "project_name": "",   # not present in any IES export reviewed so far
-            "proposed_budget": round(est["client_total"], 2),
+            "proposed_budget": round(effective_budget, 2),
             "proposed_hours": est["labor_hours"],
             "proposed_start_date": "",   # no baseline schedule field exists in IES data
             "proposed_end_date": "",     # — see module docstring "KNOWN DATA GAP"
@@ -490,7 +541,7 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
             "project_id": code,
             "billing_type": billing_type,
             "business_class": est["business_class"],
-            "estimate_total": round(est["client_total"], 2),
+            "estimate_total": round(effective_budget, 2),
             "revenue_invoiced": round(tx["revenue_invoiced"], 2),
             "planned_cost": round(planned_cost, 2),
             "planned_margin_pct": round(planned_margin_pct, 4) if planned_margin_pct is not None else "",
@@ -498,12 +549,16 @@ def convert(input_dir: Path, output_dir: Path, timesheet_path: Path | None = Non
             "margin_reliability": margin_reliability,
             "internal_labor_cost": round(internal_cost, 2) if internal_cost is not None else "",
             "external_cost_bills": round(tx["bills_total"], 2),
+            "external_cost_bills_raw": round(tx["bills_total_raw"], 2),
+            "bill_duplicates_dropped_count": tx["duplicates_dropped_count"],
+            "bill_duplicates_dropped_dollars": round(tx["duplicates_dropped_dollars"], 2),
             "external_cost_expenses": round(tx["expenses_total"], 2),
             "expense_budget": round(est["expense_budget_client"], 2),
             "po_committed": round(tx["po_total"], 2),
-            "co_count": est["co_count"],
+            "co_count": est["co_count"] + (tx["txn_co_count"] if co_source == "transactions" else 0),
             "co_hours": est["co_hours"],
-            "co_dollars": round(est["co_dollars"], 2),
+            "co_dollars": round(est["co_dollars"] + (tx["txn_co_total"] if co_source == "transactions" else 0), 2),
+            "co_source": co_source,
             "unbilled_wip": round(tx["time_charge_open_total"], 2),
             "credit_memo_count": tx["credit_memo_count"],
             "credit_memo_total": round(tx["credit_memo_total"], 2),
