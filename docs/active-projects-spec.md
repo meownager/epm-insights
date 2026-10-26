@@ -85,6 +85,21 @@ Rules for time entries:
 - **Summary rows are dropped.** The export ends with a grand-total row; the adapter must remove it explicitly, not by accident.
 - **Hours budget counts all project hours** (billable and non-billable), because both consume the planned effort. To confirm with the business.
 
+## Upload checks
+
+EPMs upload raw exports, so the app checks each upload and says what it found before showing any numbers. A check either **blocks** (the upload cannot be used) or **warns** (results shown, with the warning beside them).
+
+| Check | Result |
+|---|---|
+| Required columns missing (date, job code, hours) | Block: "This doesn't look like a timesheet export" |
+| No `approval` column | Warn: "Approval status unknown; all hours counted" |
+| No unapproved entries at all | Warn: "No unapproved hours found. If your export filtered to approved only, re-export with all entries for the latest picture" |
+| Summary or grand-total rows | Removed automatically, and reported ("1 total row removed") |
+| Export ends more than 7 days before today | Warn: "Timesheet ends on <date>; recent hours are missing" |
+| A project in `active_projects.csv` has no time entries or no transactions | Warn on that project's row |
+
+After every upload the app shows a one-line summary, for example: "1,240 entries: 1,228 approved, 12 unapproved (counted), 0 rejected (excluded), 1 total row removed."
+
 ## Calculations
 
 All values are as of `as_of_date` (default: the latest transaction date). Settings come from the criteria register, never from code.
