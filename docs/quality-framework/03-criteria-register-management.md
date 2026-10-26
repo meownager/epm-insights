@@ -6,7 +6,7 @@ The Audit Criteria Register is the single, authoritative source of all threshold
 
 The audit engine reads the register at runtime on every run. The criteria version used is printed at run start and recorded in the run record.
 
-## Current Register: v2.0.0
+## Current Register: v3.0.0
 
 File: `config/audit_criteria.yaml`
 
@@ -40,12 +40,25 @@ Thresholds differ by billing type. Fixed fee projects carry budget risk on the c
 |---|---|---|
 | `eligible_statuses` | completed, closed | Projects in these states are audited |
 
+### Active Projects (`active_projects`)
+
+Both settings scale with planned duration (`planned_end - planned_start`), so short projects and CO projects are judged fairly.
+
+| Parameter | Value | Meaning |
+|---|---|---|
+| `active_projects.window.pct` | 0.25 | Recent-spend window = 25% of planned duration, rounded to whole days |
+| `active_projects.window.min_days` | 3 | Window is never shorter than 3 days |
+| `active_projects.window.max_days` | 28 | Window is never longer than 28 days |
+| `active_projects.red_line.pct` | 0.10 | Red when money or hours run out more than 10% of planned duration before planned end |
+| `active_projects.red_line.min_days` | 1 | Red line is at least 1 day |
+
 ### Change History
 
 | Version | Date | Reason |
 |---|---|---|
 | 1.0.0 | 2026-07-01 | Initial register — single threshold set for all projects |
 | 2.0.0 | 2026-07-14 | Added billing-type-specific thresholds; fixed fee budget tightened to reflect margin risk; T&E budget loosened to reflect client-pays-actuals model; project IDs updated to NNNNN-F/T format |
+| 3.0.0 | 2026-10-26 | Added `active_projects` section (new metrics: live burn window and duration-based Red line) for the active-projects audit; MAJOR because new metrics were added. Logged as F-002 |
 
 ## How to Change a Threshold
 

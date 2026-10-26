@@ -20,7 +20,7 @@ Copy the template below, fill in all fields, and append it to the Active Finding
 
 | ID | Date Raised | Description | Root Cause | Corrective Action | Owner | Status |
 |---|---|---|---|---|---|---|
-| — | — | No active findings | — | — | — | — |
+| F-002 | 2026-10-15 | Spreadsheet burn tool showed active-project runout dates later than reality | Pending change orders counted as budget; travel forecast from a fixed 14-day window, which misses or repeats lumpy trip spend | Active-projects audit v1 (`docs/active-projects-spec.md`): approved COs only, travel averaged project-to-date, window and Red line scaled to project duration, hours tracked beside dollars. Register v3.0.0 | Syeda M. | In progress |
 
 ## Resolved Findings
 

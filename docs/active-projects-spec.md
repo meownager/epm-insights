@@ -92,11 +92,11 @@ All values are as of `as_of_date` (default: the latest transaction date). Settin
 | Output | Formula |
 |---|---|
 | `approved_budget` | sum of approved `budget` + approved `change_order` amounts (an approved CO already inside the estimate is not added twice) |
-| `pending_co` | sum of unapproved `change_order` amounts |
+| `pending_co` | sum of unapproved `change_order` amounts, plus any unapproved `budget` lines, so nothing unapproved silently disappears |
 | `spent_to_date` | sum of `time` + `expense` amounts up to `as_of_date` |
 | `remaining` | `approved_budget - spent_to_date` |
 | `planned_duration` | `planned_end - planned_start`, in days |
-| `window_days` | `window_pct × planned_duration`, kept between `window_min_days` and `window_max_days` (start: 25%, 3, 28). Short projects get a short window |
+| `window_days` | `window_pct × planned_duration` rounded to whole days, kept between `window_min_days` and `window_max_days` (start: 25%, 3, 28). Short projects get a short window |
 | `time_burn_wk` | `time` spent in the last `window_days` ÷ (`window_days` ÷ 7) |
 | `expense_burn_wk` | `expense` spent project-to-date ÷ weeks since `planned_start` (minimum 1). Averaging the whole project smooths travel bursts |
 | `weekly_burn` | `time_burn_wk + expense_burn_wk` |

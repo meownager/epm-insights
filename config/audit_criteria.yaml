@@ -3,9 +3,9 @@
 # and record a reason. The audit engine reads this file at runtime — thresholds
 # are never hardcoded in source.
 
-version: "2.0.0"
-effective_date: "2026-07-14"
-change_reason: "Add billing-type-specific thresholds. Fixed fee: tight budget tolerance (margin at risk on overruns). T&E: looser budget tolerance (client pays actuals), same hours and schedule thresholds. Project IDs updated to NNNNN-F / NNNNN-T format matching real data."
+version: "3.0.0"
+effective_date: "2026-10-26"
+change_reason: "Add active_projects section for the live burn-rate audit (docs/active-projects-spec.md). Window and Red line scale with planned duration so short projects and CO projects are judged fairly. Starting values, to calibrate against closed projects."
 
 completed_projects:
   # Projects in these states are eligible for the completed-project audit slice.
@@ -37,3 +37,18 @@ completed_projects:
     schedule:
       green_max_days: 7    # ≤7 days late → Green (same as fixed fee)
       yellow_max_days: 21  # >7 and ≤21 days late → Yellow; >21 days → Red
+
+# Live burn-rate audit for projects still running. Both settings scale with the
+# project's planned duration (planned_end - planned_start, in days).
+active_projects:
+  # Recent-spend window for time dollars and hours: 25% of planned duration,
+  # rounded to whole days, kept between 3 and 28 days.
+  window:
+    pct: 0.25
+    min_days: 3
+    max_days: 28
+  # Red when the money or hours run out more than 10% of planned duration
+  # before planned_end (at least 1 day). Between 0 and that line → Yellow.
+  red_line:
+    pct: 0.10
+    min_days: 1
