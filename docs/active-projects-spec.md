@@ -75,6 +75,15 @@ The existing `convert_ies.parse_timesheet` already reads this export.
 | `date` | date | |
 | `person` | text | |
 | `hours` | number | |
+| `approval` | `approved` \| `unapproved` \| `rejected` | |
+| `billable` | true \| false | |
+
+Rules for time entries:
+
+- **Unapproved hours count.** Waiting for approval would delay the warning, and rejected or corrected entries only make the forecast slightly pessimistic, which is the safe direction. The table shows how many counted hours are unapproved.
+- **Rejected hours never count.**
+- **Summary rows are dropped.** The export ends with a grand-total row; the adapter must remove it explicitly, not by accident.
+- **Hours budget counts all project hours** (billable and non-billable), because both consume the planned effort. To confirm with the business.
 
 ## Calculations
 
@@ -186,5 +195,5 @@ Cases 9 and 10 add hours to the shared inputs: `approved_hours` 500, `hours_used
 
 1. Are 25% (window) and 10% (Red line) good starting percentages? Calibrate against closed projects in v3.
 2. Do accepted change orders always appear inside the IES estimate, or sometimes only as separate rows?
-3. Does the time-tracking export include hours not yet approved by managers? If so, count them (earlier warning) or wait for approval?
+3. Should non-billable hours on a project count against its hours budget? v1 assumes yes.
 4. Which domain risks apply here: unposted costs (unapproved timesheets, vendor POs), expense posting lag, large material bills, money spent vs. work done, T&E not-to-exceed caps?
