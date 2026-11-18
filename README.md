@@ -54,6 +54,22 @@ python scripts/completed_project_health.py --proposal data/sample/proposal_proje
 python scripts/generate_html_report.py --detail outputs/completed_project_health_detail.csv --run-record "outputs/runs/run_*.json" --output outputs/audit_report.html
 ```
 
+### Active projects (live burn rate)
+
+Will the budget or hours run out before the planned end date? Spec: `docs/active-projects-spec.md`.
+
+```
+python scripts/run_active_audit.py
+```
+
+Runs on the synthetic sample and writes `outputs/sample/active/active_portfolio.csv` plus a run record. For real exports, put one folder per project under `data/real/` (IES sales sheet, optional Estimate sheet, timesheet CSV) and an `active_projects.csv` with planned dates:
+
+```
+python scripts/run_active_audit.py --ies-dir data/real --projects data/real/active_projects.csv --output outputs/real/active --store data/real/portfolio_store
+```
+
+In the dashboard, open the **Active Projects** page in the sidebar.
+
 ## How Health Is Classified
 
 Thresholds live in one place: `config/audit_criteria.yaml` (the Audit Criteria Register). Every change to a threshold increments the register version and records a reason. Reports state the criteria version that produced them.

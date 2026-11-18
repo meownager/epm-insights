@@ -1,0 +1,7 @@
+project_id,billing_type,planned_start,planned_end,parent_project_id,roll_up
+90001-F,fixed_fee,2026-08-03,2026-12-18,,no
+90002-T,t_and_e,2026-09-07,2026-12-11,,no
+90003-F,fixed_fee,2026-07-06,2027-01-29,,no
+90004-F,fixed_fee,2026-10-05,2027-01-29,90003-F,yes
+90005-T,t_and_e,2026-10-12,2027-02-26,,no
+90006-T,hybrid,2026-11-02,,,no
